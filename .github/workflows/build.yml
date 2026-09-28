@@ -156,11 +156,17 @@ jobs:
         run: |
           export PATH="$PATH:/c/Program Files (x86)/NSIS"
           ROOT_DIR="$(cd ../../.. && pwd)"
-          ls -la "$ROOT_DIR/../winarch/"
+          # Resolved directly (not left as ROOT_DIR/../winarch) — NSIS's
+          # File instruction does its own glob-style path matching and,
+          # confirmed live, does not normalise a ".." segment inside an
+          # otherwise-absolute path the way a shell would: it reported "no
+          # files found" for a path that `ls` on the very same runner, one
+          # command earlier, showed did exist.
+          WINARCH_DIR="$(cd "$ROOT_DIR/.." && pwd)/winarch"
           wails3 generate webview2bootstrapper -dir "$ROOT_DIR/build/windows/nsis"
           makensis \
-            -DARG_WAILS_AMD64_BINARY="$ROOT_DIR/../winarch/Push Hack Installer-amd64.exe" \
-            -DARG_WAILS_ARM64_BINARY="$ROOT_DIR/../winarch/Push Hack Installer-arm64.exe" \
+            -DARG_WAILS_AMD64_BINARY="$WINARCH_DIR/Push Hack Installer-amd64.exe" \
+            -DARG_WAILS_ARM64_BINARY="$WINARCH_DIR/Push Hack Installer-arm64.exe" \
             project.nsi
 
       # `wails3 build` links against the system's own WebKit — no external

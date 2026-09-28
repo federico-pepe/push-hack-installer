@@ -14,17 +14,17 @@
 <main class="container">
 
     <section id="screen-welcome" class="screen is-active">
-        <h1 class="title title-sm">Push Hack</h1>
-        <p class="subtitle subtitle-tight">Are you sure you want to install push-hack on your Ableton Push?</p>
+        <h1 class="title title-sm">Push Hack Installer</h1>
+        <p class="subtitle subtitle-tight subtitle-full">Are you sure you want to install push-hack on your Ableton Push?</p>
 
         <div class="warning-box warning-box-yellow">
-            <p><strong>This software is <ins>not</ins> approved, endorsed, or supported by Ableton.</strong> Use it at your own risk.</p>
-            <p>Back up your sets, files, and samples before installing. Read Ableton's official <a data-wml-openURL="https://help.ableton.com/hc/en-us/articles/10726712498076-Recovery-methods-for-Push-3-standalone">recovery methods for Push 3 Standalone</a> in case you need to restore your device.</p>
-            <p>You must uninstall push-hack before any Push software update, then reinstall it after. Make sure Push is on the latest software version before installing for the first time.</p>
+            <p><strong>This software is not approved, endorsed, or supported by Ableton.</strong> It's built by a community with the help of AI assisted coding tools. Use it at your own risk.</p>
+            <p>Before installing: back up your sets, files, and samples. Read Ableton's official <a data-wml-openURL="https://help.ableton.com/hc/en-us/articles/10726712498076-Recovery-methods-for-Push-3-standalone">recovery methods for Push 3 Standalone</a> in case you need to restore your device.</p>
+            <p>Please be aware that you must uninstall Push Hack before any Push software update, then reinstall it after. Because of that, make sure Push is on the latest software version before installing Push Hack for the first time.</p>
             <p>This app creates an SSH key just for push-hack. It doesn't touch any other keys on this computer, and you can remove it from Push at any time.</p>
         </div>
 
-        <p class="help-note">If you run into problems, don't contact Ableton Support — join the <a data-wml-openURL="https://discord.gg/8y6aYxy9nU">Push Hack Discord</a> for help.</p>
+        <p class="help-note subtitle-full">If you run into problems, don't contact Ableton Support — join the <a data-wml-openURL="https://discord.gg/8y6aYxy9nU">Push Hack Discord</a> for help.</p>
 
         <label class="checkbox">
             <input type="checkbox" id="accept-risk"/>
@@ -32,8 +32,8 @@
         </label>
 
         <div class="actions">
-            <button id="welcome-cancel" class="btn btn-secondary">Cancel</button>
-            <button id="welcome-continue" class="btn" disabled>Continue
+            <button id="welcome-cancel" class="btn btn-secondary btn-wide">Cancel</button>
+            <button id="welcome-continue" class="btn btn-wide" disabled>Continue
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </button>
         </div>
@@ -41,7 +41,7 @@
 
     <section id="screen-connect" class="screen">
         <h1 class="title">Find your Push</h1>
-        <p class="subtitle">We'll look for it on your network.</p>
+        <p class="subtitle">Make sure your Push 3 Standalone is on and connected to the same WiFi Network as this computer.</p>
 
         <div class="input-box" id="host-input-box">
             <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="18" x2="6.01" y2="18"/><path d="M6 14V8a6 6 0 0 1 12 0v6"/></svg>
@@ -94,14 +94,10 @@
     </section>
 
     <section id="screen-install" class="screen">
-        <h1 class="title">Push Hack</h1>
-        <p class="subtitle">Push Manager, Push Display, and Push Hack Catalog.</p>
+        <h1 class="title title-sm">Push Hack Installer</h1>
+        <p class="subtitle subtitle-full">Install the core modules for Push Hack to work or uninstall everything, including hacks installed via the Push Catalog.</p>
 
-        <div class="warning-box warning-box-yellow" id="install-restart-warning" hidden>
-            <p>This briefly restarts Push3 (Live included) — it takes a few seconds. Don't unplug Push or close this app while it runs.</p>
-        </div>
-
-        <p class="status-line" id="install-status" role="status" aria-live="polite">
+        <p class="status-line status-line-big" id="install-status" role="status" aria-live="polite">
             <svg class="status-icon" id="install-status-icon" hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
             <span id="install-status-text">Checking whether push-hack is already on your Push...</span>
         </p>
@@ -109,15 +105,15 @@
         <ul class="install-log" id="install-log" hidden></ul>
 
         <div class="actions">
-            <button id="do-install" class="btn" hidden>Install push-hack
+            <button id="do-install" class="btn btn-big" hidden>Install push-hack
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </button>
-            <button id="do-uninstall" class="btn btn-danger" hidden>Uninstall push-hack</button>
+            <button id="do-uninstall" class="btn btn-big btn-danger" hidden>Uninstall push-hack</button>
         </div>
 
         <div class="actions actions-secondary" id="open-app-actions" hidden>
-            <button id="open-push-manager" class="btn btn-secondary" type="button">Open Push Manager</button>
-            <button id="open-push-catalog" class="btn btn-secondary" type="button">Open Push Hack Catalog</button>
+            <button id="open-push-manager" class="btn btn-big btn-secondary" type="button">Open Push Manager</button>
+            <button id="open-push-catalog" class="btn btn-big btn-secondary" type="button">Open Push Hack Catalog</button>
         </div>
     </section>
 

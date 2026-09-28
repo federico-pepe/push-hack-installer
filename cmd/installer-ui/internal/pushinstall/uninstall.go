@@ -39,8 +39,12 @@ func UninstallAll(host string) (summary []string, err error) {
 
 	// Discover every installed push-hack service — this installer's own
 	// three core hacks and anything installed later via the Catalog, same
-	// as uninstall.sh's `ls /etc/init.d/ | grep '^push-hack-'` scan.
-	listing, _ := rootClient.run("ls /etc/init.d/ 2>/dev/null | grep '^push-hack-' || true")
+	// as uninstall.sh's `ls /etc/init.d/ | grep '^push-hack-'` scan. Retried
+	// on a blank result — see runRetryNonEmpty's doc comment — since this
+	// single command decides whether anything below happens at all; a
+	// silently-empty listing here would otherwise make Uninstall a
+	// no-op that still reports success.
+	listing, _ := rootClient.runRetryNonEmpty("ls /etc/init.d/ 2>/dev/null | grep '^push-hack-' || true", 4)
 	for _, svcName := range strings.Fields(listing) {
 		hackID := strings.TrimPrefix(svcName, "push-hack-")
 		removeOneHack(abletonClient, rootClient, svcName, hackID, pushHackDir)

@@ -14,6 +14,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/ssh"
@@ -43,7 +44,12 @@ func dial(host, user string, signer ssh.Signer) (*client, error) {
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         dialTimeout,
 	}
-	c, err := ssh.Dial("tcp", net.JoinHostPort(host, sshPort), config)
+	// "tcp4", not "tcp": mDNS resolution of push.local can return an IPv6
+	// link-local address alongside the IPv4 one, and that link-local route
+	// has been observed to silently time out on some networks/interfaces
+	// while the IPv4 route works fine — forcing IPv4 avoids picking the
+	// flaky one.
+	c, err := ssh.Dial("tcp4", net.JoinHostPort(host, sshPort), config)
 	if err != nil {
 		return nil, fmt.Errorf("connect as %s: %w", user, err)
 	}
@@ -79,6 +85,29 @@ func (c *client) run(cmd string) (output string, err error) {
 func (c *client) runOK(cmd string) bool {
 	_, err := c.run(cmd)
 	return err == nil
+}
+
+// runRetryNonEmpty runs cmd up to attempts times, retrying whenever it
+// succeeds but returns blank output. Observed against a real device: Push's
+// SSH server intermittently returns an empty result for a successful,
+// otherwise-correct command (cause unconfirmed — a connection-rate throttle
+// on the embedded sshd is the leading suspect) under back-to-back SSH
+// traffic. For a command whose result decides whether anything else
+// happens at all — see UninstallAll's use of this for its service
+// discovery listing — treating one blank reply as "nothing to do" turns a
+// transient hiccup into a silent, total no-op. A short delay between
+// attempts gives it a chance to clear.
+func (c *client) runRetryNonEmpty(cmd string, attempts int) (output string, err error) {
+	for i := 0; i < attempts; i++ {
+		output, err = c.run(cmd)
+		if err == nil && strings.TrimSpace(output) != "" {
+			return output, nil
+		}
+		if i < attempts-1 {
+			time.Sleep(500 * time.Millisecond)
+		}
+	}
+	return output, err
 }
 
 // copyFile uploads local file data to remotePath on the far side, using

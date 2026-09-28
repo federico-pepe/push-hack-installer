@@ -46,3 +46,24 @@ All notable changes to this project are documented here.
   originals' systemd branch isn't ported). File transfer speaks the
   classic SCP protocol by hand, not SFTP, since push-hack's own scripts use
   `scp` and SFTP's availability on Push's SSH server is unverified.
+- Fixed: Uninstall could silently do nothing while still reporting success.
+  Two causes found against a real device: (1) mDNS can hand back an IPv6
+  link-local address for `push.local` that silently times out while IPv4
+  works fine — every SSH/TCP dial in the app now forces IPv4. (2) Push's
+  SSH server has been observed to intermittently return blank output for
+  an otherwise-successful command; Uninstall's service-discovery listing
+  now retries on a blank result instead of treating it as "nothing
+  installed."
+- Welcome screen: title is "Push Hack Installer", the disclaimer and
+  Discord note now span the full width (matching the warning box below
+  them), the warning box is solid vivid yellow with dark text instead of a
+  tinted overlay, its copy was rewritten (mentions AI-assisted community
+  development, restructured into clearer paragraphs), and both buttons are
+  wider.
+- Connect screen: subtitle now says to check Push is on and on the same
+  Wi-Fi network, replacing the vaguer "we'll look for it."
+- Install/uninstall screen: title is "Push Hack Installer", subtitle
+  explains it installs the core modules or uninstalls everything including
+  Catalog-installed hacks, the "already installed" status is now bigger
+  and sits above the button row (the restart warning box was removed
+  entirely), and all buttons are bigger.

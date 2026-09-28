@@ -55,7 +55,10 @@ func tryAuth(host string, signer ssh.Signer) bool {
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         dialTimeout,
 	}
-	client, err := ssh.Dial("tcp", net.JoinHostPort(host, sshPort), config)
+	// "tcp4", not "tcp": see the matching comment in internal/pushinstall's
+	// dial() — mDNS can hand back an IPv6 link-local address that silently
+	// times out while IPv4 works fine.
+	client, err := ssh.Dial("tcp4", net.JoinHostPort(host, sshPort), config)
 	if err != nil {
 		return false
 	}

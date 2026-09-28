@@ -117,6 +117,8 @@ body {
 .status-line.is-ok { color: #4ade80; }
 .status-line.is-error { color: #ff7a8f; }
 .status-icon { width: 18px; height: 18px; flex: 0 0 auto; }
+.status-line-big { font-size: 1.3rem; font-weight: 700; margin-top: 0; margin-bottom: var(--s-3); }
+.status-line-big .status-icon { width: 24px; height: 24px; }
 
 .actions-secondary { margin-top: var(--s-2); }
 
@@ -202,14 +204,16 @@ body {
     line-height: 1.55;
 }
 .warning-box p:last-child { margin-bottom: 0; }
-/* Amber/yellow, not the pink/red used elsewhere for live error states —
-   this is a standing caution notice, not something gone wrong. */
+/* Solid, vivid yellow with dark text — not the pink/red used elsewhere for
+   live error states, and not a subtle tint either: this reads as a real
+   "stop and read this" notice, not a formality. */
 .warning-box-yellow {
-    background: rgba(250, 204, 21, 0.1);
-    border: 1px solid rgba(250, 204, 21, 0.35);
+    background: #facc15;
+    border: 1px solid #ca9a04;
 }
-.warning-box-yellow a { color: #fbbf24; }
-.warning-box-yellow ins { text-decoration: underline; text-decoration-color: #fbbf24; }
+.warning-box-yellow p { color: #241c02; }
+.warning-box-yellow a { color: #7a4a00; text-decoration: underline; }
+.warning-box-yellow a:hover { color: #4a2d00; }
 
 .checkbox {
     display: flex;
@@ -263,6 +267,9 @@ body {
 }
 .help-note a { color: var(--muted); text-decoration: underline; }
 .help-note a:hover { color: var(--text); }
+/* Fills the same width as the yellow warning box above it, instead of
+   wrapping narrower at each element's own default reading-width cap. */
+.subtitle-full { max-width: 100%; }
 
 .actions { display: flex; gap: var(--s-2); }
 
@@ -324,6 +331,9 @@ input[type="text"] {
 .btn:active { transform: scale(0.97); }
 .btn:disabled { opacity: 0.4; cursor: default; }
 .btn:disabled:hover { background: var(--accent-blue); }
+.btn-wide { padding-left: 32px; padding-right: 32px; }
+.btn-big { padding: 12px 22px; font-size: 16px; gap: 7px; }
+.btn-big svg { width: 19px; height: 19px; }
 
 /* Secondary action (e.g. Cancel) — outline, not filled, so it doesn't
    compete with the primary blue button next to it. */

@@ -66,7 +66,18 @@ targets.
     the classic SCP exec protocol (`scp -qtd <dir>`) by hand, including
     reading the remote's ack bytes to surface errors — not SFTP, since
     that subsystem's availability on Push's SSH server is unverified,
-    while `scp` is known to work (push-hack's own scripts use it).
+    while `scp` is known to work (push-hack's own scripts use it). Dials
+    `tcp4` specifically, not `tcp` — mDNS can hand back an IPv6 link-local
+    address for `push.local` that silently times out on some
+    networks/interfaces while IPv4 works fine; observed causing real,
+    hard-to-diagnose connection failures during testing.
+    `runRetryNonEmpty` retries a command up to 4 times if it succeeds but
+    returns blank output — Push's SSH server has been observed to
+    intermittently do this under back-to-back traffic (root cause
+    unconfirmed; a connection-rate throttle on the embedded sshd is the
+    leading suspect). `UninstallAll`'s service-discovery listing uses this,
+    since a blank reply there used to make Uninstall silently do nothing
+    while still reporting success.
   - `hackjson.go` — `rewriteHackJSON`: resolves the `${USER_DATA}`
     placeholder and injects `_push_hack_dir`/`_hack_dir`, as text
     substitution before parsing (matching `install.sh`'s `sed`-based
@@ -115,14 +126,13 @@ targets.
   - **Install/uninstall**: always all three core hacks together (no
     hack-selection screen — the user's call: push-hack's own `install.sh`
     treats these as the framework's non-optional core). On entry, calls
-    `PushInstallService.IsInstalled` and shows a green checkmark status
-    ("Push Hack is already installed on Push") if so, disabling "Install
-    push-hack" and enabling "Uninstall push-hack" (and vice versa when not
-    installed — both buttons are always visible, never hidden, just
-    disabled as appropriate). A yellow warning notes that install/uninstall
-    briefly restarts Push3 (and Live). Once installed, two extra buttons
-    open Push Manager (`:7701`) and Push Hack Catalog (`:7702`) in the
-    system browser via `PushInstallService.OpenPushManager`/
+    `PushInstallService.IsInstalled` and shows a big green checkmark status
+    ("Push Hack is already installed on Push") above the button row if so,
+    disabling "Install push-hack" and enabling "Uninstall push-hack" (and
+    vice versa when not installed — both buttons are always visible, never
+    hidden, just disabled as appropriate). Once installed, two extra
+    buttons open Push Manager (`:7701`) and Push Hack Catalog (`:7702`) in
+    the system browser via `PushInstallService.OpenPushManager`/
     `OpenPushCatalog`.
   - Buttons are flat, square-cornered, and blue (`--accent-blue`) — the
     original Wails template's pink/red gradient and rounded corners are

@@ -224,7 +224,6 @@ sshKeyContinueButton.addEventListener('click', proceedPastSSHKeySetup);
 // No hack-selection screen — always all three core hacks (push-manager,
 // push-display, push-hack-catalog) together, per the user's call: this app
 // installs push-hack's non-optional framework core, not a pick-list.
-const installRestartWarning = document.getElementById('install-restart-warning')! as HTMLDivElement;
 const installStatus = document.getElementById('install-status')! as HTMLParagraphElement;
 const installStatusIcon = document.getElementById('install-status-icon')! as unknown as SVGElement & {hidden: boolean};
 const installStatusText = document.getElementById('install-status-text')! as HTMLSpanElement;
@@ -237,7 +236,7 @@ const openPushCatalogButton = document.getElementById('open-push-catalog')! as H
 
 function setInstallStatus(text: string, kind: '' | 'ok' | 'error' = '') {
     installStatusText.textContent = text;
-    installStatus.className = kind ? `status-line is-${kind}` : 'status-line';
+    installStatus.className = kind ? `status-line status-line-big is-${kind}` : 'status-line status-line-big';
     installStatusIcon.hidden = kind !== 'ok';
 }
 
@@ -256,7 +255,6 @@ async function checkInstallStatus() {
     doUninstallButton.hidden = false;
     doInstallButton.disabled = true;
     doUninstallButton.disabled = true;
-    installRestartWarning.hidden = true;
     openAppActions.hidden = true;
     setInstallStatus('Checking whether push-hack is already on your Push...');
 
@@ -266,7 +264,6 @@ async function checkInstallStatus() {
             setInstallStatus(err, 'error');
             doInstallButton.disabled = false; // let them try anyway
             doUninstallButton.disabled = false;
-            installRestartWarning.hidden = false;
             return;
         }
         if (installed) {
@@ -279,7 +276,6 @@ async function checkInstallStatus() {
             doInstallButton.disabled = false;
             doUninstallButton.disabled = true;
         }
-        installRestartWarning.hidden = false;
     } catch (err) {
         console.error(err);
         setInstallStatus('Something went wrong. Try again.', 'error');

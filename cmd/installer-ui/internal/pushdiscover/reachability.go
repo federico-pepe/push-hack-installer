@@ -32,7 +32,10 @@ func CheckHost(host string) (reachable bool, reason string) {
 		return false, "Enter a hostname or IP address."
 	}
 
-	conn, err := net.DialTimeout("tcp", net.JoinHostPort(host, sshPort), CheckTimeout)
+	// "tcp4", not "tcp": see the matching comment in internal/pushinstall's
+	// dial() — mDNS can hand back an IPv6 link-local address that silently
+	// times out while IPv4 works fine.
+	conn, err := net.DialTimeout("tcp4", net.JoinHostPort(host, sshPort), CheckTimeout)
 	if err != nil {
 		return false, fmt.Sprintf("Can't reach %s. Check that Push is turned on and on the same network.", host)
 	}

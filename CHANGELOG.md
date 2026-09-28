@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- Fixed: the Windows installer only worked on amd64 — Windows on ARM
+  (e.g. Parallels on Apple Silicon) refused it with "this product can't
+  be installed on the current Windows architecture: supports amd64".
+  CI now builds both `amd64` and `arm64` and packages them into one
+  universal NSIS installer (the template already supported this; CI just
+  wasn't building both architectures to feed it).
+
 ## [0.1.0-beta] - 2026-09-28
 
 First release. The full guided flow works end to end against a real

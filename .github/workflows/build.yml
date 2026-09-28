@@ -92,10 +92,13 @@ jobs:
 
       # No CGO_ENABLED override needed here (unlike push-tethered-app's
       # Windows step) — this app has no cgo dependency of its own, so the
-      # Windows Taskfile's own CGO_ENABLED=0 default is exactly right.
+      # Windows Taskfile's own CGO_ENABLED=0 default is exactly right, and
+      # a plain `GOARCH=arm64 go build` cross-compile (which `wails3 task
+      # build ARCH=arm64` drives) works with no extra toolchain either.
+      #
       # windows-latest does not ship NSIS; installed via Chocolatey, whose
       # feed has been observed flaky, hence the retry loop.
-      - name: Build+package UI (Windows)
+      - name: Install NSIS (Windows)
         if: runner.os == 'Windows'
         shell: bash
         run: |
@@ -108,7 +111,37 @@ jobs:
             done
           fi
           command -v makensis >/dev/null 2>&1 || { echo "makensis still not found after retries" >&2; exit 1; }
-          wails3 task package
+
+      # A single amd64-only build reported "this product can't be installed
+      # on the current Windows architecture: supports amd64" on Windows on
+      # ARM (e.g. Parallels on Apple Silicon) — confirmed live. The NSIS
+      # template already supports a universal installer that embeds both
+      # binaries and picks the right one at install time
+      # (wails_tools.nsh's SUPPORTS_AMD64/SUPPORTS_ARM64), but
+      # create:nsis:installer only ever passes one -D flag at a time; this
+      # builds both architectures first, then calls makensis directly with
+      # both flags set, bypassing that single-arch wrapper.
+      - name: Build UI (Windows, amd64 + arm64)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          wails3 task build ARCH=amd64
+          mv "bin/Push Hack Installer.exe" "bin/Push Hack Installer-amd64.exe"
+          wails3 task build ARCH=arm64
+          mv "bin/Push Hack Installer.exe" "bin/Push Hack Installer-arm64.exe"
+
+      - name: Package UI (Windows, universal installer)
+        if: runner.os == 'Windows'
+        shell: bash
+        working-directory: cmd/installer-ui/build/windows/nsis
+        run: |
+          export PATH="$PATH:/c/Program Files (x86)/NSIS"
+          ROOT_DIR="$(cd ../../.. && pwd)"
+          wails3 generate webview2bootstrapper -dir "$ROOT_DIR/build/windows/nsis"
+          makensis \
+            -DARG_WAILS_AMD64_BINARY="$ROOT_DIR/bin/Push Hack Installer-amd64.exe" \
+            -DARG_WAILS_ARM64_BINARY="$ROOT_DIR/bin/Push Hack Installer-arm64.exe" \
+            project.nsi
 
       # `wails3 build` links against the system's own WebKit — no external
       # dylib to bundle (unlike push-tethered-app's libusb), so the plain

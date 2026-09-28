@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.0-beta] - 2026-09-28
+
+First release. The full guided flow works end to end against a real
+Push 3: find it on the network, get its SSH key accepted, install or
+uninstall push-hack (Push Manager, Push Display, Push Hack Catalog),
+verified with CI builds on macOS, Windows, and Linux.
+
 - Added CI: `.github/workflows/build.yml` builds macOS (`.dmg`), Windows
   (NSIS installer `.exe`), and Linux (`.AppImage`) on `workflow_dispatch`
   and `v*` tags, adapted from push-tethered-app's own workflow but simpler

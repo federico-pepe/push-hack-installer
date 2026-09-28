@@ -107,7 +107,11 @@ jobs:
       # build ARCH=arm64` drives) works with no extra toolchain either.
       #
       # windows-latest does not ship NSIS; installed via Chocolatey, whose
-      # feed has been observed flaky, hence the retry loop.
+      # feed has been observed flaky, hence the retry loop. The NSIS dir
+      # goes into $GITHUB_PATH, not just `export PATH` — an export dies
+      # with this step's shell, and the package steps below run in their
+      # own (confirmed live: "makensis: executable file not found in
+      # $PATH" once packaging moved to a separate step).
       - name: Install NSIS (Windows)
         if: runner.os == 'Windows'
         shell: bash
@@ -121,6 +125,7 @@ jobs:
             done
           fi
           command -v makensis >/dev/null 2>&1 || { echo "makensis still not found after retries" >&2; exit 1; }
+          echo "C:\\Program Files (x86)\\NSIS" >> "$GITHUB_PATH"
 
       # A single amd64-only build reported "this product can't be installed
       # on the current Windows architecture: supports amd64" on Windows on

@@ -24,44 +24,74 @@ const pollInterval = 2 * time.Second
 // dialTimeout is applied per attempt, not to the whole poll.
 const dialTimeout = 5 * time.Second
 
-// WaitForKeyAccepted retries an SSH auth handshake against host using the
-// local keypair (generated/loaded by EnsureKey) until it succeeds or
-// timeout elapses. It never checks the host key (mirrors install.sh's
-// `StrictHostKeyChecking=no` — see lib/common.sh's ssh_opts) since Push
-// doesn't publish a host key for users to pin, and BatchMode is implicit:
-// this never falls back to a password prompt.
-//
-// This is a long-running blocking call by design, not a background
-// goroutine with an event callback — Wails calls are already async
-// promises, so the frontend awaits this while showing a spinner, and the
-// user has that whole window to open the browser and paste the key in.
-func WaitForKeyAccepted(host string, timeout time.Duration) (accepted bool, reason string) {
+// loadSigner reads and parses the local keypair. Returns a user-facing
+// reason string on failure, same shape as the rest of this package's public
+// functions, since callers forward it straight to the UI.
+func loadSigner() (ssh.Signer, string) {
 	privPath, err := keyPath()
 	if err != nil {
-		return false, err.Error()
+		return nil, err.Error()
 	}
 	keyBytes, err := os.ReadFile(privPath)
 	if err != nil {
-		return false, "No SSH key found. Restart this step."
+		return nil, "No SSH key found."
 	}
 	signer, err := ssh.ParsePrivateKey(keyBytes)
 	if err != nil {
-		return false, "The saved SSH key is invalid. Restart this step."
+		return nil, "The saved SSH key is invalid."
 	}
+	return signer, ""
+}
 
+// tryAuth makes a single SSH auth attempt against host using signer. It
+// never checks the host key (mirrors install.sh's `StrictHostKeyChecking=no`
+// — see lib/common.sh's ssh_opts) since Push doesn't publish a host key for
+// users to pin, and BatchMode is implicit: this never falls back to a
+// password prompt.
+func tryAuth(host string, signer ssh.Signer) bool {
 	config := &ssh.ClientConfig{
 		User:            sshUser,
 		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         dialTimeout,
 	}
-	addr := net.JoinHostPort(host, sshPort)
+	client, err := ssh.Dial("tcp", net.JoinHostPort(host, sshPort), config)
+	if err != nil {
+		return false
+	}
+	_ = client.Close()
+	return true
+}
+
+// AlreadyAuthorized reports whether a local key already exists and Push
+// already accepts it — a single attempt, no retrying. Used right after the
+// Connect screen to skip SSH key setup entirely when a previous run already
+// completed it against this host.
+func AlreadyAuthorized(host string) bool {
+	signer, reason := loadSigner()
+	if reason != "" {
+		return false
+	}
+	return tryAuth(host, signer)
+}
+
+// WaitForKeyAccepted retries an SSH auth handshake against host using the
+// local keypair (generated/loaded by EnsureKey) until it succeeds or
+// timeout elapses.
+//
+// This is a long-running blocking call by design, not a background
+// goroutine with an event callback — Wails calls are already async
+// promises, so the frontend awaits this while showing a spinner, and the
+// user has that whole window to open the browser and paste the key in.
+func WaitForKeyAccepted(host string, timeout time.Duration) (accepted bool, reason string) {
+	signer, reason := loadSigner()
+	if reason != "" {
+		return false, reason + " Restart this step."
+	}
 
 	deadline := time.Now().Add(timeout)
 	for {
-		client, err := ssh.Dial("tcp", addr, config)
-		if err == nil {
-			_ = client.Close()
+		if tryAuth(host, signer) {
 			return true, ""
 		}
 		if time.Now().After(deadline) {

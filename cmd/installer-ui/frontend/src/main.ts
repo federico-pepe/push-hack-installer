@@ -1,24 +1,37 @@
-import {Clipboard, WML} from "@wailsio/runtime";
+import {Application, Clipboard, WML} from "@wailsio/runtime";
 import {ConnectService, SSHKeyService} from "../bindings/github.com/federico-pepe/push-hack-installer/cmd/installer-ui";
 
 WML.Enable();
 
-document.getElementById('version')!.innerText = "v3.0.0-beta.9";
-
 // ----- Screen switching -------------------------------------------------
-// Two screens (Welcome, Connect) rendered inline in index.html; only one is
-// shown at a time via the .is-active class. No router needed at this size —
-// see plans/2026-09-27-gui-installer.md for the rest of the planned flow
-// (SSH key setup, hack selection, install progress, done).
+// Three screens (Welcome, Connect, SSH key setup) rendered inline in
+// index.html; only one is shown at a time via the .is-active class. No
+// router needed at this size — see plans/2026-09-27-gui-installer.md for
+// the rest of the planned flow (hack selection, install progress, done).
 function showScreen(id: string) {
     document.querySelectorAll<HTMLElement>('.screen').forEach((el) => {
         el.classList.toggle('is-active', el.id === id);
     });
 }
 
-document.getElementById('welcome-continue')!.addEventListener('click', () => {
+// ----- Welcome screen -----------------------------------------------------
+// Mirrors install.sh's disclaimer gate (type "Yes" to continue) — Continue
+// stays disabled until the risk checkbox is ticked.
+const acceptRiskCheckbox = document.getElementById('accept-risk')! as HTMLInputElement;
+const welcomeContinueButton = document.getElementById('welcome-continue')! as HTMLButtonElement;
+const welcomeCancelButton = document.getElementById('welcome-cancel')! as HTMLButtonElement;
+
+acceptRiskCheckbox.addEventListener('change', () => {
+    welcomeContinueButton.disabled = !acceptRiskCheckbox.checked;
+});
+
+welcomeContinueButton.addEventListener('click', () => {
     showScreen('screen-connect');
     checkConnection();
+});
+
+welcomeCancelButton.addEventListener('click', () => {
+    Application.Quit();
 });
 
 // ----- Connect screen -----------------------------------------------------
@@ -82,10 +95,30 @@ cantConnectToggle.addEventListener('click', () => {
 
 let connectedHost = '';
 
-continueButton.addEventListener('click', () => {
+continueButton.addEventListener('click', async () => {
     connectedHost = hostInput.value.trim();
-    showScreen('screen-sshkey');
-    startSSHKeySetup();
+    continueButton.disabled = true;
+    statusLine.textContent = 'Checking for an existing key...';
+    statusLine.className = 'status-line';
+
+    let skipSSHKeySetup = false;
+    try {
+        skipSSHKeySetup = await SSHKeyService.AlreadyAuthorized(connectedHost);
+    } catch (err) {
+        console.error(err);
+        // Not fatal — just means the SSH key screen runs as normal.
+    }
+
+    if (skipSSHKeySetup) {
+        statusLine.textContent = 'Push already trusts this computer.';
+        statusLine.className = 'status-line is-ok';
+        continueButton.disabled = false;
+        proceedPastSSHKeySetup();
+    } else {
+        continueButton.disabled = false;
+        showScreen('screen-sshkey');
+        startSSHKeySetup();
+    }
 });
 
 // ----- SSH key screen -------------------------------------------------
@@ -176,7 +209,16 @@ openSSHPageButton.addEventListener('click', async () => {
     }
 });
 
-sshKeyContinueButton.addEventListener('click', () => {
-    // Next screen (hack selection) is not built yet.
-    console.log('SSH key continue clicked — next screen not implemented yet.');
-});
+// Reached either from the SSH key screen's own Continue button, or directly
+// from the Connect screen when AlreadyAuthorized finds a previous run
+// already got the key accepted for this host — see the connect-continue
+// handler above.
+function proceedPastSSHKeySetup() {
+    // TEMPORARY: hack selection (the actual next screen) isn't built yet.
+    // A visible placeholder here, not just a console.log, so reaching this
+    // point during testing doesn't look like the app silently hung.
+    console.log('Past SSH key setup — next screen not implemented yet.');
+    alert("Push is set up and trusted. Hack selection isn't built yet — that's next.");
+}
+
+sshKeyContinueButton.addEventListener('click', proceedPastSSHKeySetup);

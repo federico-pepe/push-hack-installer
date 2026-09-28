@@ -14,17 +14,26 @@
 <main class="container">
 
     <section id="screen-welcome" class="screen is-active">
-        <h1 class="title">Push Hack Installer</h1>
-        <p class="subtitle">Set up push-hack on your Ableton Push 3 — no terminal needed.</p>
+        <h1 class="title title-sm">Push Hack</h1>
+        <p class="subtitle subtitle-tight">Are you sure you want to install push-hack on your Ableton Push?</p>
 
-        <ul class="safety-notes">
-            <li>This installs three tools on your Push: Push Manager, Push Display, and Push Hack Catalog.</li>
-            <li>It never changes system files. It never touches <code>/boot</code> or <code>/opt</code>.</li>
-            <li>Your Push must be turned on and connected to the same network as this computer.</li>
-        </ul>
+        <div class="warning-box warning-box-yellow">
+            <p><strong>This software is <ins>not</ins> approved, endorsed, or supported by Ableton.</strong> Use it at your own risk.</p>
+            <p>Back up your sets, files, and samples before installing. Read Ableton's official <a data-wml-openURL="https://help.ableton.com/hc/en-us/articles/10726712498076-Recovery-methods-for-Push-3-standalone">recovery methods for Push 3 Standalone</a> in case you need to restore your device.</p>
+            <p>You must uninstall push-hack before any Push software update, then reinstall it after. Make sure Push is on the latest software version before installing for the first time.</p>
+            <p>This app creates an SSH key just for push-hack. It doesn't touch any other keys on this computer, and you can remove it from Push at any time.</p>
+        </div>
+
+        <p class="help-note">If you run into problems, don't contact Ableton Support — join the <a data-wml-openURL="https://discord.gg/8y6aYxy9nU">Push Hack Discord</a> for help.</p>
+
+        <label class="checkbox">
+            <input type="checkbox" id="accept-risk"/>
+            I understand the risks and want to continue.
+        </label>
 
         <div class="actions">
-            <button id="welcome-continue" class="btn">Continue
+            <button id="welcome-cancel" class="btn btn-secondary">Cancel</button>
+            <button id="welcome-continue" class="btn" disabled>Continue
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </button>
         </div>
@@ -85,11 +94,6 @@
     </section>
 
 </main>
-
-<hr class="footer-divider"/>
-<footer class="footer">
-    <span class="footer-version"><span id="version">v3</span></span>
-</footer>
 
 <script type="module" src="/src/main.js"></script>
 </body>

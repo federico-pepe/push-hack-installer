@@ -15,6 +15,13 @@ const keyAcceptTimeout = 5 * time.Minute
 // SSHKeyService is bound to the frontend for the SSH key setup screen.
 type SSHKeyService struct{}
 
+// AlreadyAuthorized reports whether a key from a previous run already
+// exists and Push already accepts it for host — lets the Connect screen
+// skip SSH key setup entirely when it's not needed.
+func (s *SSHKeyService) AlreadyAuthorized(host string) bool {
+	return sshsetup.AlreadyAuthorized(host)
+}
+
 // EnsureKey generates a keypair if one doesn't exist yet, and returns the
 // public key line (to display/copy) and its fingerprint.
 func (s *SSHKeyService) EnsureKey() (pubKeyLine string, fingerprint string, err string) {

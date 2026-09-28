@@ -1,6 +1,10 @@
 // Package sshsetup ports push-hack's SSH key wizard (scripts/install.sh's
 // ssh_wizard) into Go: generate or load a keypair, and confirm Push has
 // accepted it — without a terminal, without a blocking "press Enter".
+//
+// Unlike ssh_wizard, this does not use ~/.ssh/id_rsa — a dedicated,
+// installer-specific filename means this app can never silently overwrite
+// or shadow a key the user already has for something else.
 package sshsetup
 
 import (
@@ -21,19 +25,20 @@ import (
 // explicitly rather than inheriting a system default that could vary.
 const keyBits = 3072
 
-// keyPath returns the same path install.sh's ssh_wizard uses:
-// ~/.ssh/id_rsa (and id_rsa.pub next to it).
+// keyPath returns ~/.ssh/push_hack_id_rsa (and push_hack_id_rsa.pub next to
+// it) — a name scoped to this app, distinct from ssh_wizard's ~/.ssh/id_rsa
+// and from anything else the user may already have.
 func keyPath() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", fmt.Errorf("find home directory: %w", err)
 	}
-	return filepath.Join(home, ".ssh", "id_rsa"), nil
+	return filepath.Join(home, ".ssh", "push_hack_id_rsa"), nil
 }
 
 // EnsureKey returns the authorized_keys-format public key line and its
-// SHA256 fingerprint, generating a new RSA keypair at ~/.ssh/id_rsa if one
-// doesn't already exist — mirrors ssh_wizard's "found existing key" /
+// SHA256 fingerprint, generating a new RSA keypair if one doesn't already
+// exist at keyPath — mirrors ssh_wizard's "found existing key" /
 // "generating one now" branch.
 func EnsureKey() (pubKeyLine string, fingerprint string, err error) {
 	privPath, err := keyPath()

@@ -63,6 +63,13 @@ func tryAuth(host string, signer ssh.Signer) bool {
 	return true
 }
 
+// Signer loads the installer's keypair for packages that need to open their
+// own SSH sessions (see internal/pushinstall) — a user-facing reason string
+// on failure, same shape as the rest of this package's public functions.
+func Signer() (ssh.Signer, string) {
+	return loadSigner()
+}
+
 // AlreadyAuthorized reports whether a local key already exists and Push
 // already accepts it — a single attempt, no retrying. Used right after the
 // Connect screen to skip SSH key setup entirely when a previous run already

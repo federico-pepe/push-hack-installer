@@ -6,10 +6,11 @@ No terminal needed. Download the app, run it, follow the on-screen steps.
 
 ## Status
 
-In progress: the app can find your Push on the network and get its SSH key
-accepted. Hack selection and the actual install are not built yet. See
+The full flow works: find your Push, get its SSH key accepted, then install
+or uninstall push-hack. See
 [plans/2026-09-27-gui-installer.md](plans/2026-09-27-gui-installer.md) for
-the design.
+the design, and [docs/architecture.md](docs/architecture.md) for how it's
+built.
 
 ## What it does
 

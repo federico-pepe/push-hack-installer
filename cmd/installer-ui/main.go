@@ -25,6 +25,7 @@ func main() {
 		Services: []application.Service{
 			application.NewService(&ConnectService{}),
 			application.NewService(&SSHKeyService{}),
+			application.NewService(&PushInstallService{}),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),

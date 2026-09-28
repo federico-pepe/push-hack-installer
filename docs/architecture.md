@@ -7,8 +7,8 @@ The Wails v3 app: a Go backend and a plain TypeScript webview frontend
 `cmd/pushapp-ui`). Desktop only (macOS, Windows, Linux) — no iOS/Android
 targets.
 
-- `main.go` — creates the window and binds `ConnectService` and
-  `SSHKeyService` to the frontend.
+- `main.go` — creates the window and binds `ConnectService`, `SSHKeyService`,
+  and `PushInstallService` to the frontend.
 - `connectservice.go` — thin Wails-bound wrapper over `internal/pushdiscover`.
 - `internal/pushdiscover/reachability.go` — `CheckHost(host)`: a TCP dial to
   the host's SSH port (22) with a short timeout. This is a reachability
@@ -42,9 +42,55 @@ targets.
     mechanism.
 - `internal/openurl/openurl.go` — opens a URL in the system's default
   browser by shelling out per OS (`open`/`start`/`xdg-open`); Wails v3 has no
-  built-in equivalent.
+  built-in equivalent. Used for Push's `/ssh` page and (from
+  `pushinstallservice.go`) Push Manager/Push Hack Catalog's own web UIs.
+- `pushinstallservice.go` — thin Wails-bound wrapper over
+  `internal/pushinstall`.
+- `internal/pushinstall/` — ports `scripts/install.sh` and
+  `scripts/uninstall.sh` (plus `lib/common.sh`'s shared helpers) into Go,
+  for exactly the three core hacks — there is deliberately no
+  hack-selection screen. One deliberate scope cut from the bash originals:
+  this never detects the init system, because real Push 3 hardware only
+  ever runs sysvinit (see push-hack's `docs/push3-internals.md`) — the
+  systemd branch of `install.sh` is dead code on real hardware and isn't
+  ported.
+  - `vendor/` — the three hacks' pre-built binaries, `hack.json`, and
+    push-display's `service.initd` template, embedded via `go:embed`
+    (`hacks.go`). Copied from an `ableton-push-hack` checkout at the time
+    this was written — **these go stale** if push-hack's own binaries are
+    rebuilt and this installer isn't re-vendored; there's no automation for
+    that yet.
+  - `ssh.go` — a `client` per SSH user (`ableton` or `root` — Push has no
+    `sudo`, so root operations need a separate login, mirroring
+    `lib/common.sh`'s `push_exec` vs `push_exec_root`). File upload speaks
+    the classic SCP exec protocol (`scp -qtd <dir>`) by hand, including
+    reading the remote's ack bytes to surface errors — not SFTP, since
+    that subsystem's availability on Push's SSH server is unverified,
+    while `scp` is known to work (push-hack's own scripts use it).
+  - `hackjson.go` — `rewriteHackJSON`: resolves the `${USER_DATA}`
+    placeholder and injects `_push_hack_dir`/`_hack_dir`, as text
+    substitution before parsing (matching `install.sh`'s `sed`-based
+    approach) so it behaves identically regardless of where the
+    placeholder appears.
+  - `initd.go` — `genericInitd` is a byte-for-byte port of
+    `lib/common.sh`'s `generate_initd_script`, used for push-manager and
+    push-catalog (neither ships its own `service.initd`).
+    `renderCustomInitd` substitutes `{{...}}` placeholders into
+    push-display's own template, which patches `/etc/init.d/push3`'s
+    `LD_PRELOAD` line and restarts Push3 on start/stop — this is the one
+    hack whose "service" does more than run a plain binary.
+  - `install.go` / `uninstall.go` / `status.go` — `InstallAll`,
+    `UninstallAll`, `IsInstalled`. `UninstallAll` does **not** hardcode the
+    three core hacks: like `uninstall.sh`, it discovers every
+    `push-hack-*` init.d script on the device first (`ls /etc/init.d/ |
+    grep '^push-hack-'`) and removes each one — this is what also cleans
+    up hacks installed later via Push Hack Catalog, not just this
+    installer's own three. `IsInstalled` only checks the three core hacks
+    (used to decide "Install" vs "Uninstall" on the final screen); nothing
+    here purges the top-level `push-hack` directory or logs, matching
+    `uninstall.sh`'s non-`--purge` default.
 - `frontend/index.html`, `frontend/src/main.ts`, `frontend/public/style.css`
-  — three screens, toggled by a `.is-active` class (no router at this size):
+  — four screens, toggled by a `.is-active` class (no router at this size):
   - **Welcome**: title, a yellow warning box (not approved/endorsed by
     Ableton, back up first, must uninstall before a Push OS update, this app
     uses its own dedicated SSH key), a "don't contact Ableton Support, join
@@ -66,22 +112,25 @@ targets.
     "Copy key" button is also there as the reliable manual fallback), opens
     Push's `/ssh` page, then awaits `WaitForKeyAccepted` showing a "waiting"
     status until it resolves.
+  - **Install/uninstall**: always all three core hacks together (no
+    hack-selection screen — the user's call: push-hack's own `install.sh`
+    treats these as the framework's non-optional core). On entry, calls
+    `PushInstallService.IsInstalled` and shows a green checkmark status
+    ("Push Hack is already installed on Push") if so, disabling "Install
+    push-hack" and enabling "Uninstall push-hack" (and vice versa when not
+    installed — both buttons are always visible, never hidden, just
+    disabled as appropriate). A yellow warning notes that install/uninstall
+    briefly restarts Push3 (and Live). Once installed, two extra buttons
+    open Push Manager (`:7701`) and Push Hack Catalog (`:7702`) in the
+    system browser via `PushInstallService.OpenPushManager`/
+    `OpenPushCatalog`.
   - Buttons are flat, square-cornered, and blue (`--accent-blue`) — the
     original Wails template's pink/red gradient and rounded corners are
     gone. `.btn-secondary` (outline, muted) is for non-primary actions like
-    Cancel.
+    Cancel and the two "Open ..." buttons; `.btn-danger` (red) is for
+    Uninstall specifically.
 - `build/` — per-OS packaging config generated by `wails3 init`
   (`darwin/`, `windows/`, `linux/`), plus `config.yml`.
 - `Taskfile.yml` — build/dev/package tasks, run via `wails3 task <name>`.
 
-Not built yet, planned per [plans/2026-09-27-gui-installer.md](../plans/2026-09-27-gui-installer.md):
-
-- `internal/pushinstall/` — the actual hack install/uninstall logic (copy
-  binaries, generate init.d scripts, start/stop services), ported from
-  push-hack's `scripts/install.sh`/`scripts/uninstall.sh`.
-- `vendor-bin/` — pinned copies of push-hack's pre-built hack binaries
-  (push-manager, push-catalog, push_hook.so).
-- The rest of the guided flow: hack selection, install progress, done/
-  uninstall screens.
-
-Update this file as each piece lands.
+Update this file as things change.

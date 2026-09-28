@@ -1,5 +1,5 @@
 import {Application, Clipboard, WML} from "@wailsio/runtime";
-import {ConnectService, SSHKeyService} from "../bindings/github.com/federico-pepe/push-hack-installer/cmd/installer-ui";
+import {ConnectService, SSHKeyService, PushInstallService} from "../bindings/github.com/federico-pepe/push-hack-installer/cmd/installer-ui";
 
 WML.Enable();
 
@@ -214,11 +214,138 @@ openSSHPageButton.addEventListener('click', async () => {
 // already got the key accepted for this host — see the connect-continue
 // handler above.
 function proceedPastSSHKeySetup() {
-    // TEMPORARY: hack selection (the actual next screen) isn't built yet.
-    // A visible placeholder here, not just a console.log, so reaching this
-    // point during testing doesn't look like the app silently hung.
-    console.log('Past SSH key setup — next screen not implemented yet.');
-    alert("Push is set up and trusted. Hack selection isn't built yet — that's next.");
+    showScreen('screen-install');
+    checkInstallStatus();
 }
 
 sshKeyContinueButton.addEventListener('click', proceedPastSSHKeySetup);
+
+// ----- Install / uninstall screen ------------------------------------------
+// No hack-selection screen — always all three core hacks (push-manager,
+// push-display, push-hack-catalog) together, per the user's call: this app
+// installs push-hack's non-optional framework core, not a pick-list.
+const installRestartWarning = document.getElementById('install-restart-warning')! as HTMLDivElement;
+const installStatus = document.getElementById('install-status')! as HTMLParagraphElement;
+const installStatusIcon = document.getElementById('install-status-icon')! as unknown as SVGElement & {hidden: boolean};
+const installStatusText = document.getElementById('install-status-text')! as HTMLSpanElement;
+const installLog = document.getElementById('install-log')! as HTMLUListElement;
+const doInstallButton = document.getElementById('do-install')! as HTMLButtonElement;
+const doUninstallButton = document.getElementById('do-uninstall')! as HTMLButtonElement;
+const openAppActions = document.getElementById('open-app-actions')! as HTMLDivElement;
+const openPushManagerButton = document.getElementById('open-push-manager')! as HTMLButtonElement;
+const openPushCatalogButton = document.getElementById('open-push-catalog')! as HTMLButtonElement;
+
+function setInstallStatus(text: string, kind: '' | 'ok' | 'error' = '') {
+    installStatusText.textContent = text;
+    installStatus.className = kind ? `status-line is-${kind}` : 'status-line';
+    installStatusIcon.hidden = kind !== 'ok';
+}
+
+function renderInstallLog(lines: string[]) {
+    installLog.innerHTML = '';
+    for (const line of lines) {
+        const li = document.createElement('li');
+        li.textContent = line;
+        installLog.appendChild(li);
+    }
+    installLog.hidden = lines.length === 0;
+}
+
+async function checkInstallStatus() {
+    doInstallButton.hidden = false;
+    doUninstallButton.hidden = false;
+    doInstallButton.disabled = true;
+    doUninstallButton.disabled = true;
+    installRestartWarning.hidden = true;
+    openAppActions.hidden = true;
+    setInstallStatus('Checking whether push-hack is already on your Push...');
+
+    try {
+        const [installed, err] = await PushInstallService.IsInstalled(connectedHost);
+        if (err) {
+            setInstallStatus(err, 'error');
+            doInstallButton.disabled = false; // let them try anyway
+            doUninstallButton.disabled = false;
+            installRestartWarning.hidden = false;
+            return;
+        }
+        if (installed) {
+            setInstallStatus('Push Hack is already installed on Push', 'ok');
+            doInstallButton.disabled = true;
+            doUninstallButton.disabled = false;
+            openAppActions.hidden = false;
+        } else {
+            setInstallStatus('Push Hack is not installed on this Push yet.');
+            doInstallButton.disabled = false;
+            doUninstallButton.disabled = true;
+        }
+        installRestartWarning.hidden = false;
+    } catch (err) {
+        console.error(err);
+        setInstallStatus('Something went wrong. Try again.', 'error');
+    }
+}
+
+doInstallButton.addEventListener('click', async () => {
+    doInstallButton.disabled = true;
+    doUninstallButton.disabled = true;
+    setInstallStatus('Installing... this restarts Push3, please wait.');
+    renderInstallLog([]);
+
+    try {
+        const [summary, err] = await PushInstallService.Install(connectedHost);
+        renderInstallLog(summary ?? []);
+        if (err) {
+            setInstallStatus(err, 'error');
+            doInstallButton.disabled = false;
+        } else {
+            setInstallStatus('Push Hack is already installed on Push', 'ok');
+            doUninstallButton.disabled = false;
+            openAppActions.hidden = false;
+        }
+    } catch (err) {
+        console.error(err);
+        setInstallStatus('Something went wrong installing push-hack.', 'error');
+        doInstallButton.disabled = false;
+    }
+});
+
+doUninstallButton.addEventListener('click', async () => {
+    doUninstallButton.disabled = true;
+    doInstallButton.disabled = true;
+    openAppActions.hidden = true;
+    setInstallStatus('Uninstalling... this restarts Push3, please wait.');
+    renderInstallLog([]);
+
+    try {
+        const [summary, err] = await PushInstallService.Uninstall(connectedHost);
+        renderInstallLog(summary ?? []);
+        if (err) {
+            setInstallStatus(err, 'error');
+            doUninstallButton.disabled = false;
+        } else {
+            setInstallStatus('Push Hack is not installed on this Push yet.');
+            doInstallButton.disabled = false;
+        }
+    } catch (err) {
+        console.error(err);
+        setInstallStatus('Something went wrong removing push-hack.', 'error');
+        doUninstallButton.disabled = false;
+    }
+});
+
+openPushManagerButton.addEventListener('click', async () => {
+    try {
+        await PushInstallService.OpenPushManager(connectedHost);
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+openPushCatalogButton.addEventListener('click', async () => {
+    try {
+        await PushInstallService.OpenPushCatalog(connectedHost);
+    } catch (err) {
+        console.error(err);
+    }
+});

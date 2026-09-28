@@ -27,4 +27,22 @@ All notable changes to this project are documented here.
   that quits the app.
 - Restyled buttons: flat, square-cornered, blue — replacing the original
   Wails template's pink/red gradient and rounded corners.
-- Hack selection and the actual install are still not built.
+- Added the install/uninstall screen — the last piece. Always deploys all
+  three core hacks together (no hack-selection screen): Push Manager, Push
+  Display, Push Hack Catalog. Checks whether push-hack is already on the
+  device and shows "Install push-hack" or "Uninstall push-hack"
+  accordingly (both buttons always visible, the inactive one disabled), a
+  green checkmark when already installed, and a warning that either action
+  briefly restarts Push3 (and Live). Once installed, two more buttons open
+  Push Manager and Push Hack Catalog's web UIs in the browser.
+- Uninstall discovers and removes *every* `push-hack-*` service on the
+  device, not just the three this app installs — matching
+  `scripts/uninstall.sh`, this also cleans up hacks installed later via
+  Push Hack Catalog. The top-level `push-hack` data directory and logs are
+  left in place, matching `uninstall.sh`'s non-`--purge` default.
+- The install/uninstall logic is a Go port of `scripts/install.sh` and
+  `scripts/uninstall.sh`, scoped to real Push 3 hardware only (it never
+  detects the init system — Push always runs sysvinit, so the bash
+  originals' systemd branch isn't ported). File transfer speaks the
+  classic SCP protocol by hand, not SFTP, since push-hack's own scripts use
+  `scp` and SFTP's availability on Push's SSH server is unverified.

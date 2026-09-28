@@ -107,12 +107,18 @@ body {
 }
 
 .status-line {
+    display: flex;
+    align-items: center;
+    gap: 7px;
     margin: var(--s-2) 0 0;
     font-size: 0.95rem;
     color: var(--muted);
 }
 .status-line.is-ok { color: #4ade80; }
 .status-line.is-error { color: #ff7a8f; }
+.status-icon { width: 18px; height: 18px; flex: 0 0 auto; }
+
+.actions-secondary { margin-top: var(--s-2); }
 
 .link-btn {
     align-self: flex-start;
@@ -327,6 +333,25 @@ input[type="text"] {
     border: 1px solid var(--glass-border);
 }
 .btn-secondary:hover { background: var(--glass); color: var(--text); }
+
+/* Destructive action (Uninstall) — a distinct red, not the primary blue,
+   so it's never confused with "the button that moves you forward". */
+.btn-danger { background: #dc2626; }
+.btn-danger:hover { background: #b91c1c; }
+
+/* ----- Install / uninstall screen ------------------------------------------- */
+.install-log {
+    margin: 0 0 var(--s-3);
+    padding: 0;
+    list-style: none;
+    max-width: 34rem;
+}
+.install-log li {
+    padding: 4px 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
 
 /* ----- Mobile -------------------------------------------------------------- */
 @media (max-width: 640px) {

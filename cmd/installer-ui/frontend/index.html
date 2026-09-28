@@ -93,6 +93,34 @@
         </div>
     </section>
 
+    <section id="screen-install" class="screen">
+        <h1 class="title">Push Hack</h1>
+        <p class="subtitle">Push Manager, Push Display, and Push Hack Catalog.</p>
+
+        <div class="warning-box warning-box-yellow" id="install-restart-warning" hidden>
+            <p>This briefly restarts Push3 (Live included) — it takes a few seconds. Don't unplug Push or close this app while it runs.</p>
+        </div>
+
+        <p class="status-line" id="install-status" role="status" aria-live="polite">
+            <svg class="status-icon" id="install-status-icon" hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            <span id="install-status-text">Checking whether push-hack is already on your Push...</span>
+        </p>
+
+        <ul class="install-log" id="install-log" hidden></ul>
+
+        <div class="actions">
+            <button id="do-install" class="btn" hidden>Install push-hack
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+            <button id="do-uninstall" class="btn btn-danger" hidden>Uninstall push-hack</button>
+        </div>
+
+        <div class="actions actions-secondary" id="open-app-actions" hidden>
+            <button id="open-push-manager" class="btn btn-secondary" type="button">Open Push Manager</button>
+            <button id="open-push-catalog" class="btn btn-secondary" type="button">Open Push Hack Catalog</button>
+        </div>
+    </section>
+
 </main>
 
 <script type="module" src="/src/main.js"></script>

@@ -6,7 +6,8 @@ No terminal needed. Download the app, run it, follow the on-screen steps.
 
 ## Status
 
-This project is in early planning. See [plans/2026-09-27-gui-installer.md](plans/2026-09-27-gui-installer.md) for the design.
+Early skeleton: the app opens to a Welcome screen. The SSH connect/install
+flow is not built yet. See [plans/2026-09-27-gui-installer.md](plans/2026-09-27-gui-installer.md) for the design.
 
 ## What it does
 
@@ -21,8 +22,13 @@ Windows, macOS, and Linux. Built with [Wails v3](https://v3alpha.wails.io/).
 
 ## Building from source
 
-Build instructions will be added once the app skeleton exists. See
-[docs/build.md](docs/build.md).
+```bash
+cd cmd/installer-ui
+wails3 task build
+./bin/installer-ui
+```
+
+See [docs/build.md](docs/build.md) for requirements and CI plans.
 
 ## License
 

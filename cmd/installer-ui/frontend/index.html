@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+    <link rel="stylesheet" href="/style.css"/>
+    <title>Push Hack Installer</title>
+</head>
+<body>
+<!-- Fixed full-bleed background layer (avoids background-attachment:fixed, which
+     is broken in iOS WKWebView). The image swaps to a portrait crop on mobile. -->
+<div class="bg" aria-hidden="true"></div>
+
+<main class="container">
+    <h1 class="title">Push Hack Installer</h1>
+    <p class="subtitle">Set up push-hack on your Ableton Push 3 — no terminal needed.</p>
+
+    <ul class="safety-notes">
+        <li>This installs three tools on your Push: Push Manager, Push Display, and Push Hack Catalog.</li>
+        <li>It never changes system files. It never touches <code>/boot</code> or <code>/opt</code>.</li>
+        <li>Your Push must be turned on and connected to the same network as this computer.</li>
+    </ul>
+
+    <div class="actions">
+        <button id="continue" class="btn">Continue
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+    </div>
+</main>
+
+<hr class="footer-divider"/>
+<footer class="footer">
+    <span class="footer-version"><span id="version">v3</span></span>
+</footer>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

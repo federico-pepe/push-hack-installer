@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- Added CI: `.github/workflows/build.yml` builds macOS (`.dmg`), Windows
+  (NSIS installer `.exe`), and Linux (`.AppImage`) on `workflow_dispatch`
+  and `v*` tags, adapted from push-tethered-app's own workflow but simpler
+  (no cgo dependency here, so no MSYS2/mingw toolchain step or Docker
+  cross-compile path needed). A tag push also publishes a GitHub Release
+  with all three artifacts attached.
 - Code audit and cleanup: fixed the root `.gitignore`'s blanket `build/`
   rule, which was silently excluding `cmd/installer-ui/build/` (Wails'
   packaging assets — icons, platform configs, NSIS/AppImage/nfpm scripts)

@@ -1,0 +1,171 @@
+name: build
+
+# Unlike push-tethered-app (a cgo project needing three native toolchains),
+# this app has no cgo dependency of its own — pure Go SSH client + a
+# webview. Wails v3 itself still needs cgo on macOS/Linux (Cocoa/GTK
+# bridging), which is why those two platforms' own Taskfiles hardcode
+# CGO_ENABLED=1 regardless of what this app needs; Windows needs no cgo at
+# all here, so there's no MSYS2/mingw toolchain step the way
+# push-tethered-app needed for its libusb dependency.
+#
+# Runs on demand and on version tags, not on every push/PR — same
+# reasoning as push-tethered-app's workflow: a free-tier account, and no
+# desire to duplicate this whole matrix a second time when a PR merges.
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+env:
+  APP_VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'dev' }}
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: cmd/installer-ui
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: cmd/installer-ui/go.mod
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: cmd/installer-ui/frontend/package-lock.json
+
+      - name: Vet
+        run: go vet ./...
+
+      # libgtk-4-dev/libwebkitgtk-6.0-dev, not webkit2gtk-4.1 — Wails v3
+      # uses GTK4/WebKitGTK 6.0. Recommends off: this only ever compiles
+      # the UI in CI (never opens a window), so headers/.pc files are all
+      # that's needed — see push-tethered-app's build.yml for the fuller
+      # writeup of why this trim matters (173 packages / 69.6MB -> ~157
+      # packages / 61MB on a cache miss).
+      - name: Disable apt recommends (Linux)
+        if: runner.os == 'Linux'
+        run: echo 'APT::Install-Recommends "false";' | sudo tee /etc/apt/apt.conf.d/99no-recommends
+
+      - name: apt-get update (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update
+
+      - name: Install GTK4/WebKitGTK (Linux)
+        if: runner.os == 'Linux'
+        uses: awalsh128/cache-apt-pkgs-action@v1
+        with:
+          packages: libgtk-4-dev libwebkitgtk-6.0-dev
+          version: 1.0
+
+      # Pinned (not @latest): @latest defeats caching, since the cache key
+      # can't know if upstream shipped a new version.
+      - name: Cache wails3 CLI
+        id: cache-wails3
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/go/bin/wails3
+            ~/go/bin/wails3.exe
+          key: wails3-${{ runner.os }}-${{ runner.arch }}-v3.0.0-beta.9
+
+      - name: Install wails3 CLI
+        if: steps.cache-wails3.outputs.cache-hit != 'true'
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.9
+
+      # AppImage is the standard self-contained Linux desktop format: one
+      # file, chmod +x, run.
+      - name: Build UI (Linux)
+        if: runner.os == 'Linux'
+        run: wails3 build
+
+      - name: Package UI (Linux, AppImage)
+        if: runner.os == 'Linux'
+        run: wails3 task linux:create:appimage
+
+      # No CGO_ENABLED override needed here (unlike push-tethered-app's
+      # Windows step) — this app has no cgo dependency of its own, so the
+      # Windows Taskfile's own CGO_ENABLED=0 default is exactly right.
+      # windows-latest does not ship NSIS; installed via Chocolatey, whose
+      # feed has been observed flaky, hence the retry loop.
+      - name: Build+package UI (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          export PATH="$PATH:/c/Program Files (x86)/NSIS"
+          if ! command -v makensis >/dev/null 2>&1; then
+            for attempt in 1 2 3; do
+              choco install nsis -y --no-progress && break
+              echo "choco install nsis failed (attempt $attempt/3), retrying in 15s..."
+              sleep 15
+            done
+          fi
+          command -v makensis >/dev/null 2>&1 || { echo "makensis still not found after retries" >&2; exit 1; }
+          wails3 task package
+
+      # `wails3 build` links against the system's own WebKit — no external
+      # dylib to bundle (unlike push-tethered-app's libusb), so the plain
+      # dmg task is enough: builds, bundles into a real .app, ad-hoc signs
+      # (no Apple Developer ID), wraps in a .dmg.
+      - name: Package UI (macOS)
+        if: runner.os == 'macOS'
+        run: wails3 task darwin:package:dmg
+
+      # One packaged file per OS, each a normal double-click-and-run app:
+      # macOS gets a .dmg, Windows gets an NSIS installer .exe, Linux gets
+      # an AppImage.
+      - name: Upload UI binary
+        uses: actions/upload-artifact@v7
+        with:
+          name: push-hack-installer-${{ matrix.os }}
+          path: |
+            cmd/installer-ui/bin/*.dmg
+            cmd/installer-ui/bin/*-installer.exe
+            cmd/installer-ui/bin/*.AppImage
+          if-no-files-found: ignore
+
+  # Fires only on a version tag push. Downloads whatever the build matrix
+  # already produced for this commit and publishes them as a GitHub
+  # Release, named after the tag, with every artifact attached.
+  release:
+    needs: [build]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+
+      # actions/download-artifact does not reliably preserve the
+      # executable bit an upload had.
+      - name: Restore executable bit lost by download-artifact
+        working-directory: artifacts
+        run: find . -type f -name "*.AppImage" -exec chmod +x {} +
+
+      - name: Package artifacts
+        working-directory: artifacts
+        run: |
+          for dir in */; do
+            name="${dir%/}"
+            (cd "$name" && zip -r "../${name}.zip" .)
+          done
+
+      - name: Create release
+        uses: softprops/action-gh-release@v3
+        with:
+          name: ${{ github.ref_name }}
+          prerelease: ${{ contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
+          generate_release_notes: true
+          files: artifacts/*.zip

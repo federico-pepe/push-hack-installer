@@ -1,21 +1,12 @@
-# push-hack-installer
+# Push Hack Installer
 
-A desktop app that installs [push-hack](https://github.com/federico-pepe/ableton-push-hack) on an Ableton Push 3.
+A desktop app that installs [push-hack](https://github.com/federico-pepe/ableton-push-hack) on an **Ableton Push 3 Standalone**.
 
-No terminal needed. Download the app, run it, follow the on-screen steps.
-
-## Status
-
-The full flow works: find your Push, get its SSH key accepted, then install
-or uninstall push-hack. See
-[plans/2026-09-27-gui-installer.md](plans/2026-09-27-gui-installer.md) for
-the design, and [docs/architecture.md](docs/architecture.md) for how it's
-built.
+If you have an Ableton Push 2 or Ableton Push 3 Tethered, see the [push-tethered-app](https://github.com/federico-pepe/push-tethered-app)
 
 ## What it does
 
-The app connects to your Push 3 over SSH and installs the core push-hack
-hacks: Push Manager, Push Display, and Push Hack Catalog. It does the same
+The app connects to your Push 3 over SSH and installs the core modules of push-hack: *Push Manager, Push Display, and Push Hack Catalog*. It does the same
 job as push-hack's `scripts/install.sh`, but with a guided window instead of
 a command line.
 
@@ -35,4 +26,4 @@ See [docs/build.md](docs/build.md) for requirements and CI plans.
 
 ## License
 
-TBD.
+MIT - See [LICENSE](LICENSE)

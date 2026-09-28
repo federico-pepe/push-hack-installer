@@ -4,6 +4,20 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- Fixed: the Linux AppImage failed to launch at all ("error executing
+  'Push': no such file or directory") — `wails3 generate .desktop`'s own
+  `Exec=%s` template writes that field completely unquoted, so the app's
+  display name ("Push Hack Installer") split on its spaces at launch. Not
+  fixable from a template on this side (it's inside the wails3 CLI
+  itself); CI now builds Linux specifically under a no-space
+  `push-hack-installer` name (the normal convention for a Linux binary
+  anyway), while macOS/Windows keep the spaced display name.
+- Fixed: the Windows universal-installer build could fail with "no files
+  found" packaging the amd64 binary — something inside the second
+  (arm64) `wails3 task build` call was observed to make the first
+  build's renamed-in-place file vanish from `bin/` before packaging ran.
+  Both architectures now get copied to a staging directory entirely
+  outside `cmd/installer-ui`'s own build tree before packaging.
 - Fixed: the Windows installer only worked on amd64 — Windows on ARM
   (e.g. Parallels on Apple Silicon) refused it with "this product can't
   be installed on the current Windows architecture: supports amd64".

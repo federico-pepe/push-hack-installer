@@ -82,13 +82,23 @@ jobs:
 
       # AppImage is the standard self-contained Linux desktop format: one
       # file, chmod +x, run.
+      #
+      # APP_NAME is overridden to a no-space name for Linux specifically
+      # (Taskfile.yml's default is "Push Hack Installer", which works fine
+      # for macOS/Windows) — `wails3 generate .desktop`'s own Exec=%s
+      # template writes that value completely unquoted, no way to fix from
+      # this repo's side. Confirmed live: the resulting AppImage failed
+      # with "error executing 'Push': no such file or directory" (the
+      # desktop entry's Exec line split on the spaces). Lowercase-dash is
+      # the normal convention for a Linux binary/package name anyway; the
+      # macOS/Windows builds keep the spaced display name.
       - name: Build UI (Linux)
         if: runner.os == 'Linux'
-        run: wails3 build
+        run: wails3 task build APP_NAME=push-hack-installer
 
       - name: Package UI (Linux, AppImage)
         if: runner.os == 'Linux'
-        run: wails3 task linux:create:appimage
+        run: wails3 task linux:create:appimage APP_NAME=push-hack-installer
 
       # No CGO_ENABLED override needed here (unlike push-tethered-app's
       # Windows step) — this app has no cgo dependency of its own, so the
@@ -121,14 +131,23 @@ jobs:
       # create:nsis:installer only ever passes one -D flag at a time; this
       # builds both architectures first, then calls makensis directly with
       # both flags set, bypassing that single-arch wrapper.
+      # Staged outside bin/ entirely (not just renamed within it) — some
+      # step inside the second `wails3 task build` call (bindings
+      # generation runs with -clean=true; unconfirmed which one exactly)
+      # was observed to make the first build's renamed-in-place file
+      # disappear from bin/ before packaging ran, even though the rename
+      # itself succeeded. A sibling directory outside cmd/installer-ui's
+      # own build tree can't be touched by anything wails3/Task does to
+      # bin/.
       - name: Build UI (Windows, amd64 + arm64)
         if: runner.os == 'Windows'
         shell: bash
         run: |
+          mkdir -p ../winarch
           wails3 task build ARCH=amd64
-          mv "bin/Push Hack Installer.exe" "bin/Push Hack Installer-amd64.exe"
+          cp "bin/Push Hack Installer.exe" "../winarch/Push Hack Installer-amd64.exe"
           wails3 task build ARCH=arm64
-          mv "bin/Push Hack Installer.exe" "bin/Push Hack Installer-arm64.exe"
+          cp "bin/Push Hack Installer.exe" "../winarch/Push Hack Installer-arm64.exe"
 
       - name: Package UI (Windows, universal installer)
         if: runner.os == 'Windows'
@@ -137,10 +156,11 @@ jobs:
         run: |
           export PATH="$PATH:/c/Program Files (x86)/NSIS"
           ROOT_DIR="$(cd ../../.. && pwd)"
+          ls -la "$ROOT_DIR/../winarch/"
           wails3 generate webview2bootstrapper -dir "$ROOT_DIR/build/windows/nsis"
           makensis \
-            -DARG_WAILS_AMD64_BINARY="$ROOT_DIR/bin/Push Hack Installer-amd64.exe" \
-            -DARG_WAILS_ARM64_BINARY="$ROOT_DIR/bin/Push Hack Installer-arm64.exe" \
+            -DARG_WAILS_AMD64_BINARY="$ROOT_DIR/../winarch/Push Hack Installer-amd64.exe" \
+            -DARG_WAILS_ARM64_BINARY="$ROOT_DIR/../winarch/Push Hack Installer-arm64.exe" \
             project.nsi
 
       # `wails3 build` links against the system's own WebKit — no external

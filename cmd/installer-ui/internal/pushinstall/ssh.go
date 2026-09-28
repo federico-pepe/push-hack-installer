@@ -110,22 +110,13 @@ func (c *client) runRetryNonEmpty(cmd string, attempts int) (output string, err 
 	return output, err
 }
 
-// copyFile uploads local file data to remotePath on the far side, using
-// the classic SCP exec protocol (`scp -t <dir>`) — not SFTP. This exactly
-// matches what install.sh's `scp` invocations do on the wire, which is
-// known to work against Push's SSH server; the SFTP subsystem's
-// availability there is unverified, so this avoids relying on it.
-func (c *client) copyFile(localPath, remotePath string, mode os.FileMode) error {
-	data, err := os.ReadFile(localPath)
-	if err != nil {
-		return fmt.Errorf("read %s: %w", localPath, err)
-	}
-	return c.copyBytes(data, remotePath, mode)
-}
-
-// copyBytes is copyFile for in-memory content (e.g. a hack.json rewritten
-// with injected fields, or a generated init.d script) that has no local
-// file to read.
+// copyBytes uploads in-memory content (embedded binaries, a hack.json
+// rewritten with injected fields, a generated init.d script) to remotePath
+// on the far side, using the classic SCP exec protocol (`scp -t <dir>`) —
+// not SFTP. This exactly matches what install.sh's `scp` invocations do on
+// the wire, which is known to work against Push's SSH server; the SFTP
+// subsystem's availability there is unverified, so this avoids relying
+// on it.
 func (c *client) copyBytes(data []byte, remotePath string, mode os.FileMode) error {
 	dir, base := splitRemotePath(remotePath)
 

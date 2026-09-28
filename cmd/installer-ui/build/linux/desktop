@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=Push Hack Installer
+Comment=Installer for push-hack on Ableton Push 3
+# The Exec line includes %u to pass the URL to the application
+Exec=/usr/local/bin/installer-ui %u
+Terminal=false
+Type=Application
+Icon=installer-ui
+Categories=Utility;
+StartupWMClass=installer-ui
+
+ 

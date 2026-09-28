@@ -55,7 +55,7 @@ func (s *PushInstallService) OpenPushCatalog(host string) string {
 
 // Uninstall removes all three core hacks from host, leaving the top-level
 // push-hack data directory and logs in place (matches uninstall.sh's
-// default, non---purge behavior). Also restarts Push3 briefly, for the same
+// default, non `--purge` behavior). Also restarts Push3 briefly, for the same
 // push-display reason as Install.
 func (s *PushInstallService) Uninstall(host string) ([]string, string) {
 	summary, err := pushinstall.UninstallAll(host)

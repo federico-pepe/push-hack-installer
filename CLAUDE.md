@@ -15,11 +15,12 @@ Built with [Wails v3](https://v3alpha.wails.io/) (Go backend + webview
 frontend), following the same stack and CI recipe already proven by the
 sibling project `push-tethered-app` (`cmd/pushapp-ui`).
 
-Ports the install/uninstall/discover logic from push-hack's
-`scripts/install.sh`, `scripts/uninstall.sh`, `scripts/discover.sh`, and
-`scripts/lib/common.sh` into Go, replacing terminal prompts with a guided
-GUI flow. See [plans/2026-09-27-gui-installer.md](plans/2026-09-27-gui-installer.md)
-for the full design.
+Ports the install/uninstall logic from push-hack's `scripts/install.sh`,
+`scripts/uninstall.sh`, and `lib/common.sh` into Go, replacing terminal
+prompts with a guided GUI flow (reachability/key-setup checks are this
+app's own, not a port of `scripts/discover.sh`). See
+[plans/2026-09-27-gui-installer.md](plans/2026-09-27-gui-installer.md) for
+the full design.
 
 **This repo does not implement push-hack itself** — it only automates the
 deployment of push-hack's already-built hack binaries (push-manager,

@@ -10,7 +10,7 @@ import (
 // UninstallAll removes every push-hack service from host — not just the
 // three core hacks this installer deploys, but also any community hack
 // installed later via Push Hack Catalog. Matches uninstall.sh's default
-// (non---purge) behavior exactly: it never hardcodes a hack list either,
+// (non `--purge`) behavior exactly: it never hardcodes a hack list either,
 // it discovers every `push-hack-*` init.d script on the device and removes
 // each one, leaving the top-level push-hack directory and its logs in
 // place. Stopping push-display's service here is what removes the

@@ -4,6 +4,19 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- Code audit and cleanup: fixed the root `.gitignore`'s blanket `build/`
+  rule, which was silently excluding `cmd/installer-ui/build/` (Wails'
+  packaging assets — icons, platform configs, NSIS/AppImage/nfpm scripts)
+  from every commit so far; this would have broken CI and fresh-clone
+  builds. Removed a dead, never-called `copyFile` function. Bumped
+  `typescript` from `^4.9.3` (too old to understand the project's own
+  `tsconfig.json`, which needs TS 5+ for `moduleResolution: "bundler"`) to
+  `^5.7.0`, and pinned `@wailsio/runtime` to its resolved version instead
+  of a floating `latest`. Removed the leftover generic Wails scaffold
+  README under `cmd/installer-ui/` (referenced files that don't exist in
+  this project). Fixed a couple of doc typos and one stale reference to a
+  never-ported `scripts/discover.sh`.
+
 - Project scaffolded: repo, docs, and design plan created.
 - Added the Wails v3 desktop app skeleton (`cmd/installer-ui`, macOS/Windows/Linux
   only, no iOS/Android): a Welcome screen with the app's purpose, safety

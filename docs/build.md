@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Go 1.25+
+- Go 1.26+ (matches `cmd/installer-ui/go.mod`'s `go` directive)
 - Node 20+ (frontend build)
 - `wails3` CLI: `go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.9`
 

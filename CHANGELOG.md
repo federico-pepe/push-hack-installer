@@ -16,6 +16,27 @@ All notable changes to this project are documented here.
   README under `cmd/installer-ui/` (referenced files that don't exist in
   this project). Fixed a couple of doc typos and one stale reference to a
   never-ported `scripts/discover.sh`.
+- Fixed macOS `.app` showing "can't be opened because it may be damaged":
+  `CFBundleExecutable` in `build/darwin/Info.plist`/`Info.dev.plist` was
+  left over from before the app's binary name was corrected to "Push Hack
+  Installer", so it pointed at a file that no longer existed in the
+  bundle. Regenerating build assets after the rename fixed it (same root
+  cause and fix as an earlier push-tethered-app incident).
+- Renamed the built app from `installer-ui` to `Push Hack Installer`
+  (`Taskfile.yml`'s `APP_NAME`, plus `build/config.yml`'s `companyName`/
+  `productName`/`productIdentifier`/`description`/`copyright`, which were
+  still 100% unedited wails3 scaffold placeholders — "My Company", "My
+  Product", `com.mycompany.myproduct`, etc. — and would have shipped as-is
+  in the packaged installer/dmg metadata).
+- Removed the `.dmg`'s background image per request (plain background
+  now) and stopped depending on `dmg-file-icon.icns`, which doesn't
+  survive a rerun of `wails3 task common:update:build-assets`.
+- Hack binaries are no longer install-time-frozen to whatever was vendored
+  into this installer at its own build time: `InstallAll` now tries
+  fetching each hack's binary/`hack.json`/init.d script fresh from
+  `ableton-push-hack`'s `main` branch first, falling back to the embedded
+  vendored copy only if that fails (offline, GitHub unreachable, etc.).
+  The install summary notes which source was used per hack.
 
 - Project scaffolded: repo, docs, and design plan created.
 - Added the Wails v3 desktop app skeleton (`cmd/installer-ui`, macOS/Windows/Linux

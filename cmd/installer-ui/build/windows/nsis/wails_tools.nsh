@@ -5,10 +5,10 @@
 !include "FileFunc.nsh"
 
 !ifndef INFO_PROJECTNAME
-    !define INFO_PROJECTNAME "installer-ui"
+    !define INFO_PROJECTNAME "Push Hack Installer"
 !endif
 !ifndef INFO_COMPANYNAME
-    !define INFO_COMPANYNAME "Federico Pepe"
+    !define INFO_COMPANYNAME "push-hack"
 !endif
 !ifndef INFO_PRODUCTNAME
     !define INFO_PRODUCTNAME "Push Hack Installer"
@@ -17,7 +17,7 @@
     !define INFO_PRODUCTVERSION "0.1.0"
 !endif
 !ifndef INFO_COPYRIGHT
-    !define INFO_COPYRIGHT "© 2026, My Company"
+    !define INFO_COPYRIGHT "(c) 2026, push-hack contributors"
 !endif
 !ifndef PRODUCT_EXECUTABLE
     !define PRODUCT_EXECUTABLE "${INFO_PROJECTNAME}.exe"

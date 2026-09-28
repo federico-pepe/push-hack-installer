@@ -3,7 +3,7 @@
 #
 # The lines below are called `modelines`. See `:help modeline`
 
-name: "installer-ui"
+name: "Push Hack Installer"
 arch: ${GOARCH}
 platform: "linux"
 version: "0.1.0"
@@ -11,18 +11,18 @@ section: "default"
 priority: "extra"
 maintainer: ${GIT_COMMITTER_NAME} <${GIT_COMMITTER_EMAIL}>
 description: "Installer for push-hack on Ableton Push 3"
-vendor: "Federico Pepe"
+vendor: "push-hack"
 homepage: "https://wails.io"
 license: "MIT"
 release: "1"
 
 contents:
-  - src: "./bin/installer-ui"
-    dst: "/usr/local/bin/installer-ui"
+  - src: "./bin/Push Hack Installer"
+    dst: "/usr/local/bin/Push Hack Installer"
   - src: "./build/appicon.png"
-    dst: "/usr/share/icons/hicolor/128x128/apps/installer-ui.png"
-  - src: "./build/linux/installer-ui.desktop"
-    dst: "/usr/share/applications/installer-ui.desktop"
+    dst: "/usr/share/icons/hicolor/128x128/apps/Push Hack Installer.png"
+  - src: "./build/linux/Push Hack Installer.desktop"
+    dst: "/usr/share/applications/Push Hack Installer.desktop"
 
 # Default dependencies for the GTK4 + WebKitGTK 6.0 stack (Ubuntu 24.04+ / Debian 13+)
 depends:

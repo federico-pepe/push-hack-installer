@@ -5,11 +5,11 @@
 	"info": {
 		"0000": {
 			"ProductVersion": "0.1.0",
-			"CompanyName": "Federico Pepe",
+			"CompanyName": "push-hack",
 			"FileDescription": "Installer for push-hack on Ableton Push 3",
-			"LegalCopyright": "© 2026, My Company",
+			"LegalCopyright": "(c) 2026, push-hack contributors",
 			"ProductName": "Push Hack Installer",
-			"Comments": "This is a comment"
+			"Comments": "Community-built, not affiliated with Ableton"
 		}
 	}
 }

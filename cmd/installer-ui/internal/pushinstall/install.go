@@ -71,6 +71,19 @@ func installOne(abletonClient, rootClient *client, h hack, userDataDir, pushHack
 	remoteHackDir := pushHackDir + "/hacks/" + h.id
 	svcName := serviceName(h.id)
 
+	// Prefer a fresh copy from ableton-push-hack's main branch over the
+	// binary embedded in this installer at its own build time — vendor/
+	// (hacks.go) is a point-in-time snapshot that goes stale the moment
+	// push-hack ships a new build. Falls back to that snapshot on any
+	// fetch failure (offline, GitHub unreachable, etc.) rather than
+	// failing the install outright.
+	binary, hackJSON, customInitd := h.binary, h.hackJSON, h.customInitd
+	source := "bundled version"
+	if fetchedBinary, fetchedJSON, fetchedInitd, ok := fetchLatest(h); ok {
+		binary, hackJSON, customInitd = fetchedBinary, fetchedJSON, fetchedInitd
+		source = "latest from GitHub"
+	}
+
 	if _, err := abletonClient.run("mkdir -p " + shellQuote(remoteHackDir)); err != nil {
 		return "", fmt.Errorf("create hack directory: %w", err)
 	}
@@ -91,9 +104,9 @@ func installOne(abletonClient, rootClient *client, h hack, userDataDir, pushHack
 		// owned by root on the target); everything else as ableton.
 		var copyErr error
 		if strings.HasSuffix(h.binaryName, ".so") {
-			copyErr = rootClient.copyBytes(h.binary, remoteBinaryPath, 0755)
+			copyErr = rootClient.copyBytes(binary, remoteBinaryPath, 0755)
 		} else {
-			copyErr = abletonClient.copyBytes(h.binary, remoteBinaryPath, 0755)
+			copyErr = abletonClient.copyBytes(binary, remoteBinaryPath, 0755)
 		}
 		if copyErr != nil {
 			return "", fmt.Errorf("copy %s: %w", h.binaryName, copyErr)
@@ -103,7 +116,7 @@ func installOne(abletonClient, rootClient *client, h hack, userDataDir, pushHack
 		}
 	}
 
-	rewritten, err := rewriteHackJSON(h.hackJSON, userDataDir, pushHackDir, remoteHackDir)
+	rewritten, err := rewriteHackJSON(hackJSON, userDataDir, pushHackDir, remoteHackDir)
 	if err != nil {
 		return "", fmt.Errorf("prepare hack.json: %w", err)
 	}
@@ -111,11 +124,12 @@ func installOne(abletonClient, rootClient *client, h hack, userDataDir, pushHack
 		return "", fmt.Errorf("copy hack.json: %w", err)
 	}
 
+	h.customInitd = customInitd
 	if err := installService(rootClient, h, remoteHackDir, pushHackDir); err != nil {
 		return "", err
 	}
 
-	return h.id + ": installed", nil
+	return fmt.Sprintf("%s: installed (%s)", h.id, source), nil
 }
 
 // installService writes the init.d script (custom or generic — see

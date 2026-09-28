@@ -124,50 +124,26 @@ jobs:
 
       # A single amd64-only build reported "this product can't be installed
       # on the current Windows architecture: supports amd64" on Windows on
-      # ARM (e.g. Parallels on Apple Silicon) — confirmed live. The NSIS
-      # template already supports a universal installer that embeds both
-      # binaries and picks the right one at install time
-      # (wails_tools.nsh's SUPPORTS_AMD64/SUPPORTS_ARM64), but
-      # create:nsis:installer only ever passes one -D flag at a time; this
-      # builds both architectures first, then calls makensis directly with
-      # both flags set, bypassing that single-arch wrapper.
-      # Staged outside bin/ entirely (not just renamed within it) — some
-      # step inside the second `wails3 task build` call (bindings
-      # generation runs with -clean=true; unconfirmed which one exactly)
-      # was observed to make the first build's renamed-in-place file
-      # disappear from bin/ before packaging ran, even though the rename
-      # itself succeeded. A sibling directory outside cmd/installer-ui's
-      # own build tree can't be touched by anything wails3/Task does to
-      # bin/.
-      - name: Build UI (Windows, amd64 + arm64)
+      # ARM (e.g. Parallels on Apple Silicon) — confirmed live. Two
+      # separate single-arch installers (not one "universal" one) —
+      # attempted that first via a custom dual-binary makensis invocation,
+      # but NSIS's File instruction couldn't find a same-directory file
+      # that `ls`, one command earlier on the same runner, confirmed did
+      # exist; the common thread across every attempt was a space in the
+      # path, and push-tethered-app's own working Windows step (more
+      # complex than this one — real cgo dependency, MSYS2 toolchain) never
+      # puts one there. `APP_NAME=push-hack-installer` here for the same
+      # reason as Linux's override above, then the ordinary, already-proven
+      # single-arch `wails3 task package` — once per architecture.
+      - name: Build+package UI (Windows, amd64)
         if: runner.os == 'Windows'
         shell: bash
-        run: |
-          mkdir -p ../winarch
-          wails3 task build ARCH=amd64
-          cp "bin/Push Hack Installer.exe" "../winarch/Push Hack Installer-amd64.exe"
-          wails3 task build ARCH=arm64
-          cp "bin/Push Hack Installer.exe" "../winarch/Push Hack Installer-arm64.exe"
+        run: wails3 task package APP_NAME=push-hack-installer ARCH=amd64
 
-      - name: Package UI (Windows, universal installer)
+      - name: Build+package UI (Windows, arm64)
         if: runner.os == 'Windows'
         shell: bash
-        working-directory: cmd/installer-ui/build/windows/nsis
-        run: |
-          export PATH="$PATH:/c/Program Files (x86)/NSIS"
-          ROOT_DIR="$(cd ../../.. && pwd)"
-          # Resolved directly (not left as ROOT_DIR/../winarch) — NSIS's
-          # File instruction does its own glob-style path matching and,
-          # confirmed live, does not normalise a ".." segment inside an
-          # otherwise-absolute path the way a shell would: it reported "no
-          # files found" for a path that `ls` on the very same runner, one
-          # command earlier, showed did exist.
-          WINARCH_DIR="$(cd "$ROOT_DIR/.." && pwd)/winarch"
-          wails3 generate webview2bootstrapper -dir "$ROOT_DIR/build/windows/nsis"
-          makensis \
-            -DARG_WAILS_AMD64_BINARY="$WINARCH_DIR/Push Hack Installer-amd64.exe" \
-            -DARG_WAILS_ARM64_BINARY="$WINARCH_DIR/Push Hack Installer-arm64.exe" \
-            project.nsi
+        run: wails3 task package APP_NAME=push-hack-installer ARCH=arm64
 
       # `wails3 build` links against the system's own WebKit — no external
       # dylib to bundle (unlike push-tethered-app's libusb), so the plain

@@ -12,18 +12,18 @@ All notable changes to this project are documented here.
   itself); CI now builds Linux specifically under a no-space
   `push-hack-installer` name (the normal convention for a Linux binary
   anyway), while macOS/Windows keep the spaced display name.
-- Fixed: the Windows universal-installer build could fail with "no files
-  found" packaging the amd64 binary — something inside the second
-  (arm64) `wails3 task build` call was observed to make the first
-  build's renamed-in-place file vanish from `bin/` before packaging ran.
-  Both architectures now get copied to a staging directory entirely
-  outside `cmd/installer-ui`'s own build tree before packaging.
 - Fixed: the Windows installer only worked on amd64 — Windows on ARM
   (e.g. Parallels on Apple Silicon) refused it with "this product can't
-  be installed on the current Windows architecture: supports amd64".
-  CI now builds both `amd64` and `arm64` and packages them into one
-  universal NSIS installer (the template already supported this; CI just
-  wasn't building both architectures to feed it).
+  be installed on the current Windows architecture: supports amd64". CI
+  now also builds `arm64` and ships it as a second installer. (A single
+  "universal" installer embedding both architectures was tried first,
+  since the NSIS template supports it — but building it needs passing a
+  binary path containing a space through NSIS's own `File` instruction,
+  which reliably failed to find a file confirmed to exist moments earlier
+  via `ls`. Simpler and more robust: apply the same fix as the Linux one
+  above — build under the no-space `push-hack-installer` name — and use
+  the ordinary, already-proven single-arch packaging path once per
+  architecture instead.)
 
 ## [0.1.0-beta] - 2026-09-28
 

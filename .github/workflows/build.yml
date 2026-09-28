@@ -175,7 +175,8 @@ jobs:
           name: push-hack-installer-${{ matrix.os }}
           path: |
             cmd/installer-ui/bin/*.dmg
-            cmd/installer-ui/bin/*-installer.exe
+            cmd/installer-ui/bin/*-amd64-installer.exe
+            cmd/installer-ui/bin/*-arm64-installer.exe
             cmd/installer-ui/bin/*.AppImage
           if-no-files-found: ignore
 

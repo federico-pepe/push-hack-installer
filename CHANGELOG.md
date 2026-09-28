@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.1-beta] - 2026-09-28
+
+Fixes for Windows and Linux packaging found testing v0.1.0-beta on real
+machines. Windows now ships two installers — pick `amd64` for most PCs,
+`arm64` for Windows on ARM (e.g. Parallels on an Apple Silicon Mac).
+
 - Fixed: the Linux AppImage failed to launch at all ("error executing
   'Push': no such file or directory") — `wails3 generate .desktop`'s own
   `Exec=%s` template writes that field completely unquoted, so the app's

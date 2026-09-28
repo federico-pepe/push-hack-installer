@@ -143,6 +143,43 @@ body {
 #screen-connect .input-box { width: 100%; max-width: 24rem; margin-bottom: 0; }
 #screen-connect .actions { margin-top: var(--s-4); }
 
+/* ----- SSH key screen -------------------------------------------------- */
+.fingerprint-box {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    max-width: 30rem;
+    padding: var(--s-2) var(--s-3);
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    margin-bottom: var(--s-3);
+}
+.fingerprint-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+.fingerprint {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.92rem;
+    color: var(--text);
+    word-break: break-all;
+    background: none;
+    padding: 0;
+}
+.steps {
+    margin: 0 0 var(--s-3);
+    padding-left: 1.2em;
+    max-width: 30rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+#screen-sshkey .actions { gap: var(--s-2); margin-top: var(--s-2); flex-wrap: wrap; }
+
 /* ----- Brand row ----------------------------------------------------------- */
 .brand {
     display: flex;

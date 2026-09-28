@@ -55,6 +55,35 @@
         </div>
     </section>
 
+    <section id="screen-sshkey" class="screen">
+        <h1 class="title">Add your key to Push</h1>
+        <p class="subtitle">push-hack connects over SSH. Push needs to know this computer's key.</p>
+
+        <div class="fingerprint-box" id="fingerprint-box">
+            <span class="fingerprint-label">This computer's key</span>
+            <code class="fingerprint" id="fingerprint">Generating key...</code>
+            <button type="button" class="link-btn" id="copy-key" disabled>Copy key</button>
+        </div>
+
+        <ol class="steps">
+            <li>Click "Copy key" above.</li>
+            <li>Click "Open Push's key page" below. It opens in your browser.</li>
+            <li>Paste the key and save.</li>
+            <li>Come back here — this screen updates on its own.</li>
+        </ol>
+
+        <p class="status-line" id="sshkey-status" role="status" aria-live="polite"></p>
+
+        <div class="actions">
+            <button id="open-ssh-page" class="btn" disabled>Open Push's key page
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </button>
+            <button id="sshkey-continue" class="btn" disabled hidden>Continue
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+        </div>
+    </section>
+
 </main>
 
 <hr class="footer-divider"/>

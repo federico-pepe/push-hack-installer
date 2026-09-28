@@ -6,8 +6,10 @@ No terminal needed. Download the app, run it, follow the on-screen steps.
 
 ## Status
 
-Early skeleton: the app opens to a Welcome screen. The SSH connect/install
-flow is not built yet. See [plans/2026-09-27-gui-installer.md](plans/2026-09-27-gui-installer.md) for the design.
+In progress: the app can find your Push on the network and get its SSH key
+accepted. Hack selection and the actual install are not built yet. See
+[plans/2026-09-27-gui-installer.md](plans/2026-09-27-gui-installer.md) for
+the design.
 
 ## What it does
 

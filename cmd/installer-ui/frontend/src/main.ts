@@ -1,5 +1,5 @@
-import {WML} from "@wailsio/runtime";
-import {ConnectService} from "../bindings/github.com/federico-pepe/push-hack-installer/cmd/installer-ui";
+import {Clipboard, WML} from "@wailsio/runtime";
+import {ConnectService, SSHKeyService} from "../bindings/github.com/federico-pepe/push-hack-installer/cmd/installer-ui";
 
 WML.Enable();
 
@@ -80,7 +80,103 @@ cantConnectToggle.addEventListener('click', () => {
     cantConnectHint.hidden = !cantConnectHint.hidden;
 });
 
+let connectedHost = '';
+
 continueButton.addEventListener('click', () => {
-    // Next screen (SSH key setup) is not built yet.
-    console.log('Connect continue clicked — next screen not implemented yet.');
+    connectedHost = hostInput.value.trim();
+    showScreen('screen-sshkey');
+    startSSHKeySetup();
+});
+
+// ----- SSH key screen -------------------------------------------------
+const fingerprintEl = document.getElementById('fingerprint')! as HTMLElement;
+const sshKeyStatus = document.getElementById('sshkey-status')! as HTMLParagraphElement;
+const openSSHPageButton = document.getElementById('open-ssh-page')! as HTMLButtonElement;
+const sshKeyContinueButton = document.getElementById('sshkey-continue')! as HTMLButtonElement;
+const copyKeyButton = document.getElementById('copy-key')! as HTMLButtonElement;
+
+let sshKeyPubLine = '';
+let sshKeySetupStarted = false;
+
+// Generates/loads the key once per app run — re-entering this screen (e.g.
+// after "Try again") reuses the same key rather than regenerating it.
+async function startSSHKeySetup() {
+    if (sshKeySetupStarted) {
+        return;
+    }
+    sshKeySetupStarted = true;
+
+    try {
+        const [pubKeyLine, fingerprint, err] = await SSHKeyService.EnsureKey();
+        if (err) {
+            fingerprintEl.textContent = 'Could not create a key.';
+            sshKeyStatus.textContent = err;
+            sshKeyStatus.className = 'status-line is-error';
+            return;
+        }
+        sshKeyPubLine = pubKeyLine;
+        fingerprintEl.textContent = fingerprint;
+        openSSHPageButton.disabled = false;
+        copyKeyButton.disabled = false;
+
+        // Best-effort convenience copy so the common case ("generate, then
+        // paste") needs no extra click. The explicit Copy key button below
+        // is the reliable path if this silently does nothing.
+        Clipboard.SetText(sshKeyPubLine).catch((err) => console.error(err));
+    } catch (err) {
+        console.error(err);
+        fingerprintEl.textContent = 'Could not create a key.';
+        sshKeyStatus.textContent = "Something went wrong generating the key.";
+        sshKeyStatus.className = 'status-line is-error';
+    }
+}
+
+copyKeyButton.addEventListener('click', async () => {
+    try {
+        await Clipboard.SetText(sshKeyPubLine);
+        const original = copyKeyButton.textContent;
+        copyKeyButton.textContent = 'Copied!';
+        setTimeout(() => { copyKeyButton.textContent = original; }, 1500);
+    } catch (err) {
+        console.error(err);
+        copyKeyButton.textContent = "Couldn't copy";
+    }
+});
+
+openSSHPageButton.addEventListener('click', async () => {
+    openSSHPageButton.disabled = true;
+    sshKeyStatus.textContent = "Waiting for you to add the key on Push...";
+    sshKeyStatus.className = 'status-line';
+
+    try {
+        await SSHKeyService.OpenSSHPage(connectedHost);
+    } catch (err) {
+        console.error(err);
+        // Not fatal — the user can open the page manually, so polling still proceeds.
+    }
+
+    try {
+        const [accepted, reason] = await SSHKeyService.WaitForKeyAccepted(connectedHost);
+        if (accepted) {
+            sshKeyStatus.textContent = 'Key accepted!';
+            sshKeyStatus.className = 'status-line is-ok';
+            openSSHPageButton.hidden = true;
+            sshKeyContinueButton.hidden = false;
+            sshKeyContinueButton.disabled = false;
+        } else {
+            sshKeyStatus.textContent = reason;
+            sshKeyStatus.className = 'status-line is-error';
+            openSSHPageButton.disabled = false;
+        }
+    } catch (err) {
+        console.error(err);
+        sshKeyStatus.textContent = "Couldn't check whether the key was accepted. Try again.";
+        sshKeyStatus.className = 'status-line is-error';
+        openSSHPageButton.disabled = false;
+    }
+});
+
+sshKeyContinueButton.addEventListener('click', () => {
+    // Next screen (hack selection) is not built yet.
+    console.log('SSH key continue clicked — next screen not implemented yet.');
 });

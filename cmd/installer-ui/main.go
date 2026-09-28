@@ -24,6 +24,7 @@ func main() {
 		Description: "Installer for push-hack on Ableton Push 3",
 		Services: []application.Service{
 			application.NewService(&ConnectService{}),
+			application.NewService(&SSHKeyService{}),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),

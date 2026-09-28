@@ -36,15 +36,13 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: cmd/installer-ui/go.mod
+          cache-dependency-path: cmd/installer-ui/go.sum
 
       - uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: npm
           cache-dependency-path: cmd/installer-ui/frontend/package-lock.json
-
-      - name: Vet
-        run: go vet ./...
 
       # libgtk-4-dev/libwebkitgtk-6.0-dev, not webkit2gtk-4.1 — Wails v3
       # uses GTK4/WebKitGTK 6.0. Recommends off: this only ever compiles
@@ -119,6 +117,14 @@ jobs:
       - name: Package UI (macOS)
         if: runner.os == 'macOS'
         run: wails3 task darwin:package:dmg
+
+      # Must run after the build steps above, not before: main.go's
+      # `//go:embed all:frontend/dist` fails vet/build both until npm has
+      # produced that (gitignored) directory — confirmed the hard way, the
+      # exact failure push-tethered-app's build.yml already has a comment
+      # warning about for the same reason.
+      - name: Vet
+        run: go vet ./...
 
       # One packaged file per OS, each a normal double-click-and-run app:
       # macOS gets a .dmg, Windows gets an NSIS installer .exe, Linux gets

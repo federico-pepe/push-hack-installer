@@ -8,24 +8,53 @@
 </head>
 <body>
 <!-- Fixed full-bleed background layer (avoids background-attachment:fixed, which
-     is broken in iOS WKWebView). The image swaps to a portrait crop on mobile. -->
+     is broken in iOS WKWebView). Flat colour — see .bg in style.css. -->
 <div class="bg" aria-hidden="true"></div>
 
 <main class="container">
-    <h1 class="title">Push Hack Installer</h1>
-    <p class="subtitle">Set up push-hack on your Ableton Push 3 — no terminal needed.</p>
 
-    <ul class="safety-notes">
-        <li>This installs three tools on your Push: Push Manager, Push Display, and Push Hack Catalog.</li>
-        <li>It never changes system files. It never touches <code>/boot</code> or <code>/opt</code>.</li>
-        <li>Your Push must be turned on and connected to the same network as this computer.</li>
-    </ul>
+    <section id="screen-welcome" class="screen is-active">
+        <h1 class="title">Push Hack Installer</h1>
+        <p class="subtitle">Set up push-hack on your Ableton Push 3 — no terminal needed.</p>
 
-    <div class="actions">
-        <button id="continue" class="btn">Continue
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </button>
-    </div>
+        <ul class="safety-notes">
+            <li>This installs three tools on your Push: Push Manager, Push Display, and Push Hack Catalog.</li>
+            <li>It never changes system files. It never touches <code>/boot</code> or <code>/opt</code>.</li>
+            <li>Your Push must be turned on and connected to the same network as this computer.</li>
+        </ul>
+
+        <div class="actions">
+            <button id="welcome-continue" class="btn">Continue
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+        </div>
+    </section>
+
+    <section id="screen-connect" class="screen">
+        <h1 class="title">Find your Push</h1>
+        <p class="subtitle">We'll look for it on your network.</p>
+
+        <div class="input-box" id="host-input-box">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="18" x2="6.01" y2="18"/><path d="M6 14V8a6 6 0 0 1 12 0v6"/></svg>
+            <input aria-label="Push hostname or IP address" class="input" id="host" type="text" value="push.local" autocomplete="off" spellcheck="false"/>
+        </div>
+
+        <p class="status-line" id="connect-status" role="status" aria-live="polite">Checking...</p>
+
+        <button type="button" class="link-btn" id="cant-connect-toggle">Can't connect?</button>
+        <p class="hint" id="cant-connect-hint" hidden>
+            Make sure Push is turned on and connected to the same Wi-Fi or network
+            as this computer. If you know Push's IP address, you can type it into
+            the field above instead of <code>push.local</code>.
+        </p>
+
+        <div class="actions">
+            <button id="connect-continue" class="btn" disabled>Continue
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+        </div>
+    </section>
+
 </main>
 
 <hr class="footer-divider"/>

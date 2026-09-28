@@ -1,7 +1,6 @@
 // Command installer-ui is the desktop app that installs push-hack onto an
 // Ableton Push 3 over SSH, without the user opening a terminal. See
-// plans/2026-09-27-gui-installer.md for the planned install/connect flow —
-// this is the skeleton window only; no SSH logic is wired up yet.
+// plans/2026-09-27-gui-installer.md for the planned install/connect flow.
 package main
 
 import (
@@ -23,6 +22,9 @@ func main() {
 	app := application.New(application.Options{
 		Name:        "Push Hack Installer",
 		Description: "Installer for push-hack on Ableton Push 3",
+		Services: []application.Service{
+			application.NewService(&ConnectService{}),
+		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
 		},

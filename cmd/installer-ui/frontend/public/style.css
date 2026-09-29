@@ -72,10 +72,17 @@ body {
 }
 
 body {
-    min-height: 100vh;
-    min-height: 100dvh;
+    height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;             /* content area + footer pinned to the bottom */
+    /* Fixed (not min-) height, with .container scrolling internally below —
+       the window is a fixed 618px tall, and WKWebView pins `position: fixed`
+       to the bottom of the full document rather than the visible viewport
+       once content overflows, so a taller screen (e.g. the welcome screen's
+       disclaimer) would otherwise push the footer below the fold with no
+       way to reach it. */
+    overflow: hidden;
     /* Respect mobile safe areas (notch / home indicator). No bottom padding:
        the footer sits flush at the bottom edge. */
     /* Wider outer margins on the golden scale (φ² top/right, φ³ left). */
@@ -84,7 +91,9 @@ body {
 }
 
 .container {
-    flex: 1 0 auto;                     /* fill the space above the footer */
+    flex: 1 1 auto;                     /* fill the space above the footer */
+    min-height: 0;                      /* let flex shrink it below content size, for overflow-y to engage */
+    overflow-y: auto;                   /* scroll internally rather than push the footer off-screen */
     width: 100%;
     max-width: 820px;
     display: flex;
@@ -363,9 +372,32 @@ input[type="text"] {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
+/* ----- Footer ---------------------------------------------------------------
+   Flush at the bottom of the (fixed-height, see body above) window, shown
+   behind every screen — "Export Debug Logs" needs to be reachable no matter
+   where in the flow something went wrong. Not position:fixed: WKWebView pins
+   fixed elements to the bottom of the full document rather than the visible
+   viewport once .container's content overflows, which put this off-screen. */
+.footer {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 820px;
+    padding: var(--s-2) 0 max(var(--s-2), env(safe-area-inset-bottom));
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: var(--s-3);
+}
+.footer .link-btn {
+    align-self: auto;
+    margin: 0;
+    font-size: 0.78rem;
+}
+
 /* ----- Mobile -------------------------------------------------------------- */
 @media (max-width: 640px) {
     .container { align-items: center; text-align: center; margin: 0 auto; }
+    .footer { justify-content: center; margin: 0 auto; }
     .subtitle { margin-left: auto; margin-right: auto; }
     /* Trim the surround on a phone, but keep the input at 16px (iOS focus-zoom
        guard) — only the padding/button/icon shrink, not the field's text. */

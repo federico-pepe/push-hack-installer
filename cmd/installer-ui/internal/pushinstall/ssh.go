@@ -18,6 +18,8 @@ import (
 	"time"
 
 	"golang.org/x/crypto/ssh"
+
+	"github.com/federico-pepe/push-hack-installer/cmd/installer-ui/internal/applog"
 )
 
 // sshPort matches pushdiscover's reachability check and sshsetup's auth checks.
@@ -51,8 +53,10 @@ func dial(host, user string, signer ssh.Signer) (*client, error) {
 	// flaky one.
 	c, err := ssh.Dial("tcp4", net.JoinHostPort(host, sshPort), config)
 	if err != nil {
+		applog.Printf("ssh dial %s@%s failed: %v", user, host, err)
 		return nil, fmt.Errorf("connect as %s: %w", user, err)
 	}
+	applog.Printf("ssh dial %s@%s: connected", user, host)
 	return &client{sshClient: c}, nil
 }
 
@@ -74,8 +78,10 @@ func (c *client) run(cmd string) (output string, err error) {
 	session.Stdout = &buf
 	session.Stderr = &buf
 	if err := session.Run(cmd); err != nil {
+		applog.Printf("ssh run %q failed: %v (output: %s)", cmd, err, strings.TrimSpace(buf.String()))
 		return buf.String(), fmt.Errorf("%s: %w", cmd, err)
 	}
+	applog.Printf("ssh run %q: ok", cmd)
 	return buf.String(), nil
 }
 
@@ -118,6 +124,7 @@ func (c *client) runRetryNonEmpty(cmd string, attempts int) (output string, err 
 // subsystem's availability there is unverified, so this avoids relying
 // on it.
 func (c *client) copyBytes(data []byte, remotePath string, mode os.FileMode) error {
+	applog.Printf("scp %d bytes to %s (mode %s)", len(data), remotePath, mode.Perm())
 	dir, base := splitRemotePath(remotePath)
 
 	session, err := c.sshClient.NewSession()
@@ -153,6 +160,7 @@ func (c *client) copyBytes(data []byte, remotePath string, mode os.FileMode) err
 	_ = stdin.Close()
 
 	if err := session.Wait(); err != nil {
+		applog.Printf("scp to %s failed: %v (%s)", remotePath, err, stderr.String())
 		return fmt.Errorf("scp to %s: %w (%s)", remotePath, err, stderr.String())
 	}
 	return nil

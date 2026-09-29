@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	"github.com/federico-pepe/push-hack-installer/cmd/installer-ui/internal/applog"
 	"github.com/federico-pepe/push-hack-installer/cmd/installer-ui/internal/openurl"
 	"github.com/federico-pepe/push-hack-installer/cmd/installer-ui/internal/sshsetup"
 )
@@ -19,7 +20,9 @@ type SSHKeyService struct{}
 // exists and Push already accepts it for host — lets the Connect screen
 // skip SSH key setup entirely when it's not needed.
 func (s *SSHKeyService) AlreadyAuthorized(host string) bool {
-	return sshsetup.AlreadyAuthorized(host)
+	authorized := sshsetup.AlreadyAuthorized(host)
+	applog.Printf("AlreadyAuthorized(%s): %v", host, authorized)
+	return authorized
 }
 
 // EnsureKey generates a keypair if one doesn't exist yet, and returns the
@@ -27,14 +30,18 @@ func (s *SSHKeyService) AlreadyAuthorized(host string) bool {
 func (s *SSHKeyService) EnsureKey() (pubKeyLine string, fingerprint string, err string) {
 	line, fp, e := sshsetup.EnsureKey()
 	if e != nil {
+		applog.Printf("EnsureKey failed: %v", e)
 		return "", "", e.Error()
 	}
+	applog.Printf("EnsureKey: using key fingerprint %s", fp)
 	return line, fp, ""
 }
 
 // OpenSSHPage opens Push's "add an SSH key" web page in the system browser.
 func (s *SSHKeyService) OpenSSHPage(host string) string {
+	applog.Printf("OpenSSHPage(%s)", host)
 	if err := openurl.Open("http://" + host + "/ssh"); err != nil {
+		applog.Printf("OpenSSHPage(%s) failed: %v", host, err)
 		return err.Error()
 	}
 	return ""
@@ -43,5 +50,8 @@ func (s *SSHKeyService) OpenSSHPage(host string) string {
 // WaitForKeyAccepted blocks (see keyAcceptTimeout) until Push accepts the
 // local key over SSH, or the timeout elapses.
 func (s *SSHKeyService) WaitForKeyAccepted(host string) (bool, string) {
-	return sshsetup.WaitForKeyAccepted(host, keyAcceptTimeout)
+	applog.Printf("WaitForKeyAccepted(%s): waiting up to %s", host, keyAcceptTimeout)
+	accepted, reason := sshsetup.WaitForKeyAccepted(host, keyAcceptTimeout)
+	applog.Printf("WaitForKeyAccepted(%s): accepted=%v reason=%q", host, accepted, reason)
+	return accepted, reason
 }

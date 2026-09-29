@@ -4,6 +4,15 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.2-beta] - 2026-09-29
+
+- Added a debug log. The app now writes a timestamped log file for every
+  run, under the OS's standard cache directory. Every screen action and
+  every SSH command against Push goes into it. An "Export Debug Logs" link
+  in the footer, visible on every screen, saves it as a `.txt` file for
+  bug reports.
+- Added a Discord link in the footer, next to "Export Debug Logs".
+
 ## [0.1.1-beta] - 2026-09-28
 
 Fixes for Windows and Linux packaging found testing v0.1.0-beta on real

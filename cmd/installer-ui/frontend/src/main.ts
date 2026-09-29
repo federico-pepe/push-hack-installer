@@ -1,5 +1,5 @@
 import {Application, Clipboard, WML} from "@wailsio/runtime";
-import {ConnectService, SSHKeyService, PushInstallService} from "../bindings/github.com/federico-pepe/push-hack-installer/cmd/installer-ui";
+import {ConnectService, SSHKeyService, PushInstallService, LogService} from "../bindings/github.com/federico-pepe/push-hack-installer/cmd/installer-ui";
 
 WML.Enable();
 
@@ -343,5 +343,29 @@ openPushCatalogButton.addEventListener('click', async () => {
         await PushInstallService.OpenPushCatalog(connectedHost);
     } catch (err) {
         console.error(err);
+    }
+});
+
+// ----- Footer: Export Debug Logs -------------------------------------------
+// Shown outside the .screen elements, so it's reachable from every step of
+// the flow, not just the install screen.
+const exportLogsButton = document.getElementById('export-logs')! as HTMLButtonElement;
+
+exportLogsButton.addEventListener('click', async () => {
+    const original = exportLogsButton.textContent;
+    exportLogsButton.disabled = true;
+    exportLogsButton.textContent = 'Exporting...';
+
+    try {
+        const err = await LogService.Export();
+        exportLogsButton.textContent = err ? "Couldn't export logs" : 'Logs exported';
+    } catch (err) {
+        console.error(err);
+        exportLogsButton.textContent = "Couldn't export logs";
+    } finally {
+        setTimeout(() => {
+            exportLogsButton.textContent = original;
+            exportLogsButton.disabled = false;
+        }, 2000);
     }
 });

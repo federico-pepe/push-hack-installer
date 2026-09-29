@@ -7,6 +7,7 @@ import (
 	"embed"
 	"log"
 
+	"github.com/federico-pepe/push-hack-installer/cmd/installer-ui/internal/applog"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -19,6 +20,14 @@ import (
 var assets embed.FS
 
 func main() {
+	// Non-fatal: a debug log we couldn't open isn't worth refusing to start
+	// the installer over. applog.Printf silently no-ops if this failed.
+	if err := applog.Init(); err != nil {
+		log.Printf("debug log unavailable: %v", err)
+	} else {
+		applog.Printf("push-hack-installer starting, log at %s", applog.Path())
+	}
+
 	app := application.New(application.Options{
 		Name:        "Push Hack Installer",
 		Description: "Installer for push-hack on Ableton Push 3",
@@ -26,6 +35,7 @@ func main() {
 			application.NewService(&ConnectService{}),
 			application.NewService(&SSHKeyService{}),
 			application.NewService(&PushInstallService{}),
+			application.NewService(&LogService{}),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),

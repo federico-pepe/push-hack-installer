@@ -1,8 +1,14 @@
+<div align="center">
 # Push Hack Installer
 
-A desktop app that installs [push-hack](https://github.com/federico-pepe/ableton-push-hack) on an **Ableton Push 3 Standalone**.
+**A desktop app that installs [push-hack](https://github.com/federico-pepe/ableton-push-hack) on an your Ableton Push 3 Standalone**.
+
+[**Download**](../../releases)
+
+![Screenshot of the Push Hack Installer](resources/push-hack-installer.png)
 
 If you have an Ableton Push 2 or Ableton Push 3 Tethered, see the [push-tethered-app](https://github.com/federico-pepe/push-tethered-app)
+</div>
 
 ## What it does
 

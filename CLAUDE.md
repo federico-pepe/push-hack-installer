@@ -6,6 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 > **Writing-style rule:** When writing or editing code comments, use the `caveman` skill. When writing or editing technical documentation (`docs/`, README files, hack-level READMEs, `CHANGELOG.md`), use the `simple-english` skill.
 
+## Push family context
+
+Shared facts for all Push repos (repo map, git identity, `core/` pinning, cross-repo hardware facts):
+
+@~/.claude/push-family.md
+
 ## Project
 
 `push-hack-installer` — cross-platform (Windows/Mac/Linux) desktop app that

@@ -1,5 +1,5 @@
 import {Application, Clipboard, WML} from "@wailsio/runtime";
-import {ConnectService, SSHKeyService, PushInstallService, LogService} from "../bindings/github.com/federico-pepe/push-hack-installer/cmd/installer-ui";
+import {ConnectService, SSHKeyService, PushInstallService, LogService, UpdateService} from "../bindings/github.com/federico-pepe/push-hack-installer/cmd/installer-ui";
 
 WML.Enable();
 
@@ -369,3 +369,20 @@ exportLogsButton.addEventListener('click', async () => {
         }, 2000);
     }
 });
+
+// ----- Update check ---------------------------------------------------------
+// Runs once at startup. The banner stays hidden if the app is up to date,
+// offline, or a dev build (Check returns "").
+const updateBanner = document.getElementById('update-banner')! as HTMLDivElement;
+const updateBannerText = document.getElementById('update-banner-text')! as HTMLSpanElement;
+
+document.getElementById('update-open')!.addEventListener('click', () => {
+    UpdateService.OpenReleasePage().catch(console.error);
+});
+
+UpdateService.Check().then((latest) => {
+    if (latest) {
+        updateBannerText.textContent = `Push Hack Installer ${latest} is available.`;
+        updateBanner.hidden = false;
+    }
+}).catch(console.error);

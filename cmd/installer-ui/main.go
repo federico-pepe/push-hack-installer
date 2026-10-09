@@ -36,6 +36,7 @@ func main() {
 			application.NewService(&SSHKeyService{}),
 			application.NewService(&PushInstallService{}),
 			application.NewService(&LogService{}),
+			application.NewService(&UpdateService{}),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),

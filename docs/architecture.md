@@ -8,8 +8,8 @@ The Wails v3 app: a Go backend and a plain TypeScript webview frontend
 targets.
 
 - `main.go` — creates the window, calls `applog.Init()`, and binds
-  `ConnectService`, `SSHKeyService`, `PushInstallService`, and `LogService`
-  to the frontend.
+  `ConnectService`, `SSHKeyService`, `PushInstallService`, `LogService`,
+  and `UpdateService` to the frontend.
 - `internal/applog/applog.go` — one append-only debug log file per app run,
   under the OS's standard cache directory
   (`<UserCacheDir>/push-hack-installer/logs/install-<timestamp>.log`).
@@ -22,6 +22,18 @@ targets.
   `.txt` file. Bound to the footer's "Export Debug Logs" link
   (`frontend/index.html`), which sits outside the `.screen` elements so
   it's reachable from every step of the flow, not just the install screen.
+- `internal/version/version.go` — `Version`, `"dev"` by default. CI and the
+  platform Taskfiles set it with `-ldflags -X` from `APP_VERSION` (the
+  release tag).
+- `internal/updatecheck/` — asks the GitHub releases API for a newer
+  release. It compares `-alpha`, `-beta`, and `-rc` suffixes by semver
+  order. A `dev` build skips the check. It never downloads or installs
+  anything.
+- `updateservice.go` — `UpdateService.Check()` runs once at startup and
+  returns the newer tag, or `""`. A failed check goes to the debug log and
+  shows nothing. `OpenReleasePage()` opens the release page found by the
+  last check in the default browser. The yellow banner above the footer
+  (`frontend/index.html`) uses both.
 - `connectservice.go` — thin Wails-bound wrapper over `internal/pushdiscover`.
 - `internal/pushdiscover/reachability.go` — `CheckHost(host)`: a TCP dial to
   the host's SSH port (22) with a short timeout. This is a reachability

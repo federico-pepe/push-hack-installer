@@ -10,6 +10,8 @@ All notable changes to this project are documented here.
   release. If one exists, a yellow banner shows the new version and an
   "Open release page" button. The app does not download or install
   anything. If GitHub is not reachable, the banner stays hidden.
+- Fixed the macOS app icon: the new icon was not used because the old
+  `Assets.car` took priority. It is rebuilt from the new art.
 - The release version is now built into the app (`-ldflags`). A local
   build reports `dev` and skips the check.
 

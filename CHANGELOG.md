@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.3-beta] - 2026-10-09
+
+- Changed the app icon on macOS, Windows, and Linux.
+
 ## [0.1.2-beta] - 2026-09-29
 
 - Added a debug log. The app now writes a timestamped log file for every

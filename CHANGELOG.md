@@ -4,7 +4,9 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
-## [0.1.5-beta] - 2026-10-28
+## [0.1.6-beta] - 2026-10-28
+
+0.1.5-beta was tagged, but its Linux build failed, so it has no release: the CI runner `ubuntu-latest` became Ubuntu 26.04, where the AppImage tool stops. The Linux build now runs on `ubuntu-24.04`, like every earlier release. This release has the same changes as 0.1.5-beta:
 
 - The installer now also installs the **PushHack Remote Script**, the one script every hack uses to reach Live. It goes to Live's User Library (`Music/Ableton/User Library/Remote Scripts/PushHack`). The files come fresh from `ableton-push-hack` on GitHub; the copy inside the app is the fallback when there is no internet. Uninstall removes the `PushHack` folder and nothing else.
 - After an install (and when Push Hack is already installed), the app shows the step you still do on the Push: select **PushHack** in the MIDI Preferences as a control surface (Input and Output: None) and restart. If an old `PushHackBrowser` or `PushHackArrangement` script is on the Push, the install log says so; remove it in Push Manager (System page).

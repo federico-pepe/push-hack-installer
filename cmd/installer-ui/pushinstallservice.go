@@ -13,18 +13,20 @@ import (
 // install.sh treats these three as the non-optional framework core).
 type PushInstallService struct{}
 
-// IsInstalled reports whether push-hack is already deployed to host.
-func (s *PushInstallService) IsInstalled(host string) (bool, string) {
-	installed, err := pushinstall.IsInstalled(host)
+// Status reports how much of push-hack is on host: "installed", "none", or
+// "needs-script" (the three hacks are there but not the PushHack Remote Script,
+// as after an older installer; Install adds it).
+func (s *PushInstallService) Status(host string) (string, string) {
+	state, err := pushinstall.Status(host)
 	if err != nil {
-		applog.Printf("IsInstalled(%s) failed: %v", host, err)
-		return false, err.Error()
+		applog.Printf("Status(%s) failed: %v", host, err)
+		return pushinstall.StateNone, err.Error()
 	}
-	applog.Printf("IsInstalled(%s): %v", host, installed)
-	return installed, ""
+	applog.Printf("Status(%s): %s", host, state)
+	return state, ""
 }
 
-// Install deploys all three core hacks to host. Blocking — see
+// Install deploys all three core hacks and the PushHack Remote Script to host. Blocking — see
 // SSHKeyService.WaitForKeyAccepted for why that's fine with Wails' async
 // call model. Installing (specifically, starting push-display's service)
 // restarts Push3 and briefly interrupts Live; the UI warns about this
@@ -66,7 +68,7 @@ func (s *PushInstallService) OpenPushCatalog(host string) string {
 	return ""
 }
 
-// Uninstall removes all three core hacks from host, leaving the top-level
+// Uninstall removes all three core hacks and the PushHack Remote Script from host, leaving the top-level
 // push-hack data directory and logs in place (matches uninstall.sh's
 // default, non `--purge` behavior). Also restarts Push3 briefly, for the same
 // push-display reason as Install.

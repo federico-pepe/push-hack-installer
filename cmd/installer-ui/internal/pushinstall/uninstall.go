@@ -51,6 +51,13 @@ func UninstallAll(host string) (summary []string, err error) {
 		summary = append(summary, hackID+": removed")
 	}
 
+	// The PushHack Remote Script lives in Live's User Library, outside the
+	// services. Only the PushHack folder goes; other scripts, and an old
+	// PushHackBrowser or PushHackArrangement, stay.
+	if removeRemoteScript(abletonClient, userDataDir) {
+		summary = append(summary, "PushHack Remote Script: removed (clear its slot in Live's preferences)")
+	}
+
 	// Legacy backup left behind by push-display's old standalone deploy.sh
 	// path (not something this installer ever creates itself, but a device
 	// tested with that script beforehand could still have it) — cleaned up

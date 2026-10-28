@@ -30,7 +30,10 @@ the full design.
 
 **This repo does not implement push-hack itself** — it only automates the
 deployment of push-hack's already-built hack binaries (push-manager,
-push-catalog, push-display) onto a Push 3 device.
+push-catalog, push-display) and the PushHack Remote Script onto a Push 3
+device. A change to `scripts/install.sh` in push-hack must be mirrored here.
+Before a release, run `scripts/vendor-from-push-hack.sh <ableton-push-hack checkout>`
+so the embedded fallback matches the release.
 
 ## Reference Docs
 

@@ -15,7 +15,7 @@ const ableton = "ableton"
 const root = "root"
 
 // InstallAll deploys all three core hacks (push-manager, push-catalog,
-// push-display) to host, porting install.sh's deploy_hack +
+// push-display) and the PushHack Remote Script to host, porting install.sh's deploy_hack +
 // install_hack_service for exactly this fixed hack set — there's no
 // hack-selection screen, so no per-hack enable/disable to honor.
 //
@@ -62,6 +62,14 @@ func InstallAll(host string) (summary []string, err error) {
 			return summary, fmt.Errorf("%s: %w", h.id, err)
 		}
 		summary = append(summary, line)
+	}
+
+	// The PushHack Remote Script goes to Live's User Library. Not part of the
+	// three services, so a failure here is reported after they are installed.
+	lines, err := installRemoteScript(abletonClient, userDataDir)
+	summary = append(summary, lines...)
+	if err != nil {
+		return summary, err
 	}
 
 	return summary, nil

@@ -228,6 +228,7 @@ const installStatus = document.getElementById('install-status')! as HTMLParagrap
 const installStatusIcon = document.getElementById('install-status-icon')! as unknown as SVGElement & {hidden: boolean};
 const installStatusText = document.getElementById('install-status-text')! as HTMLSpanElement;
 const installLog = document.getElementById('install-log')! as HTMLUListElement;
+const nextSteps = document.getElementById('next-steps')! as HTMLDivElement;
 const doInstallButton = document.getElementById('do-install')! as HTMLButtonElement;
 const doUninstallButton = document.getElementById('do-uninstall')! as HTMLButtonElement;
 const openAppActions = document.getElementById('open-app-actions')! as HTMLDivElement;
@@ -256,19 +257,28 @@ async function checkInstallStatus() {
     doInstallButton.disabled = true;
     doUninstallButton.disabled = true;
     openAppActions.hidden = true;
+    nextSteps.hidden = true;
     setInstallStatus('Checking whether push-hack is already on your Push...');
 
     try {
-        const [installed, err] = await PushInstallService.IsInstalled(connectedHost);
+        const [state, err] = await PushInstallService.Status(connectedHost);
         if (err) {
             setInstallStatus(err, 'error');
             doInstallButton.disabled = false; // let them try anyway
             doUninstallButton.disabled = false;
             return;
         }
-        if (installed) {
+        if (state === 'installed') {
             setInstallStatus('Push Hack is already installed on Push', 'ok');
             doInstallButton.disabled = true;
+            doUninstallButton.disabled = false;
+            openAppActions.hidden = false;
+            nextSteps.hidden = false;
+        } else if (state === 'needs-script') {
+            // Installed by an older installer: the three hacks are there, the
+            // PushHack Remote Script is not. Install adds it (and restarts Push3).
+            setInstallStatus('Push Hack is installed, but the PushHack Remote Script is missing. Install again to add it.');
+            doInstallButton.disabled = false;
             doUninstallButton.disabled = false;
             openAppActions.hidden = false;
         } else {
@@ -287,6 +297,7 @@ doInstallButton.addEventListener('click', async () => {
     doUninstallButton.disabled = true;
     setInstallStatus('Installing... this restarts Push3, please wait.');
     renderInstallLog([]);
+    nextSteps.hidden = true;
 
     try {
         const [summary, err] = await PushInstallService.Install(connectedHost);
@@ -298,6 +309,7 @@ doInstallButton.addEventListener('click', async () => {
             setInstallStatus('Push Hack is already installed on Push', 'ok');
             doUninstallButton.disabled = false;
             openAppActions.hidden = false;
+            nextSteps.hidden = false;
         }
     } catch (err) {
         console.error(err);
@@ -310,6 +322,7 @@ doUninstallButton.addEventListener('click', async () => {
     doUninstallButton.disabled = true;
     doInstallButton.disabled = true;
     openAppActions.hidden = true;
+    nextSteps.hidden = true;
     setInstallStatus('Uninstalling... this restarts Push3, please wait.');
     renderInstallLog([]);
 

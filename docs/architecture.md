@@ -81,7 +81,9 @@ targets.
   ported.
   - `vendor/` — the three hacks' pre-built binaries, `hack.json`, and
     push-display's `service.initd` template, embedded via `go:embed`
-    (`hacks.go`). Copied from an `ableton-push-hack` checkout at the time
+    (`hacks.go`), and the PushHack Remote Script (`vendor/remote-script/PushHack/`,
+    embedded by `remotescript.go`). `scripts/vendor-from-push-hack.sh` refreshes all of
+    it from an `ableton-push-hack` checkout; `vendor/SOURCE` names the commit. Copied from an `ableton-push-hack` checkout at the time
     this was written — this is the **offline fallback**, not the primary
     source: `fetch.go`'s `fetchLatest` tries downloading each of those same
     three files fresh from `ableton-push-hack`'s `main` branch
@@ -123,14 +125,31 @@ targets.
     push-display's own template, which patches `/etc/init.d/push3`'s
     `LD_PRELOAD` line and restarts Push3 on start/stop — this is the one
     hack whose "service" does more than run a plain binary.
+  - `remotescript.go` — the PushHack Remote Script. It goes to Live's User
+    Library (`<data>/Music/Ableton/User Library/Remote Scripts/PushHack`), not to
+    `hacks/<id>/`, and has no service. `installRemoteScript` replaces the whole
+    folder (so a file a newer script dropped does not stay), makes the folders
+    first (the SCP helper writes one file into a folder that exists), and then copies
+    each file as `ableton`. Like the hacks, the files come fresh from
+    `ableton-push-hack`'s `main` branch when GitHub answers: one call to the
+    GitHub tree API lists `remote-script/PushHack/`, then each file comes from
+    `raw.githubusercontent.com`; any failure, an unsafe path (`..`, absolute) or a
+    script without `__init__.py` and `PushHack.py` falls back to the embedded copy,
+    all-or-nothing. If Live's User Library is not on the Push (Live never ran),
+    nothing is installed and the log line says to start Live once. An old
+    `PushHackBrowser` or `PushHackArrangement` is only reported, never removed:
+    the user does that in Push Manager's System page.
   - `install.go` / `uninstall.go` / `status.go` — `InstallAll`,
-    `UninstallAll`, `IsInstalled`. `UninstallAll` does **not** hardcode the
+    `UninstallAll`, `Status`. `InstallAll` installs the three services, then the
+    script (a failure of the script is reported after the services are in).
+    `UninstallAll` removes the `PushHack` folder only. `UninstallAll` does **not** hardcode the
     three core hacks: like `uninstall.sh`, it discovers every
     `push-hack-*` init.d script on the device first (`ls /etc/init.d/ |
     grep '^push-hack-'`) and removes each one — this is what also cleans
     up hacks installed later via Push Hack Catalog, not just this
-    installer's own three. `IsInstalled` only checks the three core hacks
-    (used to decide "Install" vs "Uninstall" on the final screen); nothing
+    installer's own three. `Status` checks the three core hacks and the script (used to decide
+    "Install" vs "Uninstall" on the final screen): `installed`, `none`, or
+    `needs-script` for a Push set up by an older installer, where Install adds the script; nothing
     here purges the top-level `push-hack` directory or logs, matching
     `uninstall.sh`'s non-`--purge` default.
 - `frontend/index.html`, `frontend/src/main.ts`, `frontend/public/style.css`
@@ -159,14 +178,17 @@ targets.
   - **Install/uninstall**: always all three core hacks together (no
     hack-selection screen — the user's call: push-hack's own `install.sh`
     treats these as the framework's non-optional core). On entry, calls
-    `PushInstallService.IsInstalled` and shows a big green checkmark status
+    `PushInstallService.Status` and shows a big green checkmark status
     ("Push Hack is already installed on Push") above the button row if so,
     disabling "Install push-hack" and enabling "Uninstall push-hack" (and
     vice versa when not installed — both buttons are always visible, never
     hidden, just disabled as appropriate). Once installed, two extra
     buttons open Push Manager (`:7701`) and Push Hack Catalog (`:7702`) in
     the system browser via `PushInstallService.OpenPushManager`/
-    `OpenPushCatalog`.
+    `OpenPushCatalog`. After an install, and when Push Hack is already installed, a
+    "One more step" box says how to select PushHack in Live: Push's MIDI Preferences,
+    Control Scripts, an empty slot, the Control Surface list, PushHack, Input and
+    Output None, then restart Push or Live.
   - Buttons are flat, square-cornered, and blue (`--accent-blue`) — the
     original Wails template's pink/red gradient and rounded corners are
     gone. `.btn-secondary` (outline, muted) is for non-primary actions like

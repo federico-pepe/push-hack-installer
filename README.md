@@ -15,7 +15,10 @@ If you have an Ableton Push 2 or Ableton Push 3 Tethered, see the [push-tethered
 
 The app connects to your Push 3 over SSH and installs the core modules of push-hack: *Push Manager, Push Display, and Push Hack Catalog*. It does the same
 job as push-hack's `scripts/install.sh`, but with a guided window instead of
-a command line.
+a command line. It also installs the **PushHack Remote Script**, the one script
+every hack uses to reach Live. After the install, the app shows the one step you
+still do on the Push: select **PushHack** as a control surface in Live's MIDI
+Preferences and restart.
 
 ## Platforms
 

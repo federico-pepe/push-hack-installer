@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.5-beta] - 2026-10-28
+
+- The installer now also installs the **PushHack Remote Script**, the one script every hack uses to reach Live. It goes to Live's User Library (`Music/Ableton/User Library/Remote Scripts/PushHack`). The files come fresh from `ableton-push-hack` on GitHub; the copy inside the app is the fallback when there is no internet. Uninstall removes the `PushHack` folder and nothing else.
+- After an install (and when Push Hack is already installed), the app shows the step you still do on the Push: select **PushHack** in the MIDI Preferences as a control surface (Input and Output: None) and restart. If an old `PushHackBrowser` or `PushHackArrangement` script is on the Push, the install log says so; remove it in Push Manager (System page).
+- A Push set up by an older installer (the three hacks, no script) now shows "the PushHack Remote Script is missing" and Install adds it. Install restarts Push3, as before.
+- The built-in copies of Push Manager, Push Catalog and Push Display are refreshed to Push Hack 0.1.18-alpha. `scripts/vendor-from-push-hack.sh` does this refresh.
+
 ## [0.1.4-beta] - 2026-10-09
 
 - Added an update check. At startup the app asks GitHub for a newer

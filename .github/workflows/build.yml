@@ -25,7 +25,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        # ubuntu-24.04, not ubuntu-latest: latest became 26.04 in October 2026,
+        # whose GTK files sit elsewhere, and linuxdeploy's GTK plugin stopped
+        # ("cp: cannot stat 'gtk-4.0'", then 'gdk-pixbuf-2.0/2.10.0'). 24.04 is
+        # what every earlier release was built on.
+        os: [macos-latest, ubuntu-24.04, windows-latest]
     runs-on: ${{ matrix.os }}
     defaults:
       run:

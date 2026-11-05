@@ -13,10 +13,12 @@ import (
 // (non `--purge`) behavior exactly: it never hardcodes a hack list either,
 // it discovers every `push-hack-*` init.d script on the device and removes
 // each one, leaving the top-level push-hack directory and its logs in
-// place. Stopping push-display's service here is what removes the
+// place. With purge set (uninstall.sh's `--purge`) the whole push-hack
+// directory is deleted too — irreversible; the UI says so next to the
+// checkbox. Stopping push-display's service here is what removes the
 // LD_PRELOAD patch from /etc/init.d/push3 and restarts Push3 — the UI
 // warns about this before calling this at all.
-func UninstallAll(host string) (summary []string, err error) {
+func UninstallAll(host string, purge bool) (summary []string, err error) {
 	signer, reason := sshsetup.Signer()
 	if reason != "" {
 		return nil, fmt.Errorf("%s", reason)
@@ -63,6 +65,14 @@ func UninstallAll(host string) (summary []string, err error) {
 	// tested with that script beforehand could still have it) — cleaned up
 	// unconditionally, matching uninstall.sh.
 	rootClient.runOK("rm -f /etc/init.d/push3.push-hack-bak")
+
+	// --purge: delete the whole push-hack directory (configs, logs, hack
+	// data). Runs last, after every service is stopped, so nothing is
+	// writing into it. Best-effort like the steps above.
+	if purge {
+		abletonClient.runOK("rm -rf " + shellQuote(pushHackDir))
+		summary = append(summary, "push-hack data folder: deleted ("+pushHackDir+")")
+	}
 
 	if len(summary) == 0 {
 		summary = append(summary, "No push-hack services found on Push.")

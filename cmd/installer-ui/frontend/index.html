@@ -102,30 +102,45 @@
             <span id="install-status-text">Checking whether push-hack is already on your Push...</span>
         </p>
 
+        <div class="actions actions-top" id="open-app-actions" hidden>
+            <button id="open-push-manager" class="btn btn-big btn-secondary btn-uniform" type="button">Open Push Manager</button>
+            <button id="open-push-catalog" class="btn btn-big btn-secondary btn-uniform" type="button">Open Push Hack Catalog</button>
+        </div>
+
         <ul class="install-log" id="install-log" hidden></ul>
 
         <div class="next-steps" id="next-steps" hidden>
-            <h2 class="next-steps-title">One more step: turn on PushHack in Live</h2>
+            <h2 class="next-steps-title">One more step: turn on the PushHack remote script in Live</h2>
             <ol>
                 <li>On Push, open <strong>MIDI Preferences</strong>.</li>
                 <li>Use the top-left knob to select <strong>Control Scripts</strong>, then pick an empty slot.</li>
                 <li>Use the third knob to scroll the <strong>Control Surface</strong> list and select <strong>PushHack</strong>. Leave <em>Input</em> and <em>Output</em> set to <strong>None</strong>.</li>
                 <li>Restart Push (or Live) so the script loads.</li>
             </ol>
-            <p class="next-steps-note">Push Manager's System page shows if PushHack is running. If you used the old PushHackBrowser or PushHackArrangement scripts, remove them there once PushHack is on.</p>
+            <p class="next-steps-note">Push Manager's System page shows if PushHack is running.</p>
         </div>
 
-        <div class="actions">
-            <button id="do-install" class="btn btn-big" hidden>Install push-hack
+        <div class="warning-box warning-box-red" id="purge-confirm" role="alertdialog" aria-labelledby="purge-confirm-title" hidden>
+            <p id="purge-confirm-title"><strong>Delete all Push Hack data?</strong></p>
+            <p>This uninstalls Push Hack and then deletes the whole <code>push-hack</code> folder on your Push: logs, settings and the data of every hack. You cannot undo this.</p>
+            <div class="actions">
+                <button id="purge-confirm-cancel" class="btn btn-big btn-secondary btn-uniform" type="button">Cancel</button>
+                <button id="purge-confirm-yes" class="btn btn-big btn-danger btn-uniform" type="button">Yes, delete everything</button>
+            </div>
+        </div>
+
+        <div class="actions" id="main-actions">
+            <button id="do-install" class="btn btn-big btn-uniform" hidden>Install push-hack
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </button>
-            <button id="do-uninstall" class="btn btn-big btn-danger" hidden>Uninstall push-hack</button>
+            <button id="do-uninstall" class="btn btn-big btn-danger btn-uniform" hidden>Uninstall push-hack</button>
         </div>
 
-        <div class="actions actions-secondary" id="open-app-actions" hidden>
-            <button id="open-push-manager" class="btn btn-big btn-secondary" type="button">Open Push Manager</button>
-            <button id="open-push-catalog" class="btn btn-big btn-secondary" type="button">Open Push Hack Catalog</button>
-        </div>
+        <label class="checkbox checkbox-danger" id="purge-option" hidden>
+            <input type="checkbox" id="purge-data"/>
+            <span><strong>Delete all Push Hack data.</strong> Check this option if you want to completely remove the push-hack folders, logs, and settings from Push. This cannot be undone.</span>
+        </label>
+
     </section>
 
 </main>

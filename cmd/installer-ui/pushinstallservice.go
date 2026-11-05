@@ -70,11 +70,12 @@ func (s *PushInstallService) OpenPushCatalog(host string) string {
 
 // Uninstall removes all three core hacks and the PushHack Remote Script from host, leaving the top-level
 // push-hack data directory and logs in place (matches uninstall.sh's
-// default, non `--purge` behavior). Also restarts Push3 briefly, for the same
+// default, non `--purge` behavior). With purge true it also deletes that
+// directory (uninstall.sh's `--purge`). Also restarts Push3 briefly, for the same
 // push-display reason as Install.
-func (s *PushInstallService) Uninstall(host string) ([]string, string) {
-	applog.Printf("Uninstall(%s): starting", host)
-	summary, err := pushinstall.UninstallAll(host)
+func (s *PushInstallService) Uninstall(host string, purge bool) ([]string, string) {
+	applog.Printf("Uninstall(%s): starting (purge=%v)", host, purge)
+	summary, err := pushinstall.UninstallAll(host, purge)
 	for _, line := range summary {
 		applog.Printf("Uninstall(%s): %s", host, line)
 	}

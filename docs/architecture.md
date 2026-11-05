@@ -147,7 +147,12 @@ targets.
     `push-hack-*` init.d script on the device first (`ls /etc/init.d/ |
     grep '^push-hack-'`) and removes each one — this is what also cleans
     up hacks installed later via Push Hack Catalog, not just this
-    installer's own three. `Status` checks the three core hacks and the script (used to decide
+    installer's own three. `UninstallAll(host, purge)` takes a `purge` flag, the
+    same as `uninstall.sh --purge`: when true, it also runs `rm -rf` on the whole
+    `push-hack` data folder (configs, logs, hack data) after all services are
+    stopped. The Uninstall screen has a checkbox for it, off by default and
+    reset after each uninstall. With it checked, "Uninstall push-hack" does not run at once: an in-page red confirm box asks first ("Yes, uninstall and delete everything" / "Cancel"). It is not `window.confirm`, since webview dialogs are not reliable. The checkbox (below the Install/Uninstall buttons) label says what it deletes and that it
+    cannot be undone. `Status` checks the three core hacks and the script (used to decide
     "Install" vs "Uninstall" on the final screen): `installed`, `none`, or
     `needs-script` for a Push set up by an older installer, where Install adds the script; nothing
     here purges the top-level `push-hack` directory or logs, matching

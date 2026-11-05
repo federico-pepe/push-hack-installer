@@ -231,6 +231,12 @@ const installLog = document.getElementById('install-log')! as HTMLUListElement;
 const nextSteps = document.getElementById('next-steps')! as HTMLDivElement;
 const doInstallButton = document.getElementById('do-install')! as HTMLButtonElement;
 const doUninstallButton = document.getElementById('do-uninstall')! as HTMLButtonElement;
+const purgeOption = document.getElementById('purge-option')! as HTMLLabelElement;
+const purgeCheckbox = document.getElementById('purge-data')! as HTMLInputElement;
+const purgeConfirm = document.getElementById('purge-confirm')! as HTMLDivElement;
+const purgeConfirmYes = document.getElementById('purge-confirm-yes')! as HTMLButtonElement;
+const purgeConfirmCancel = document.getElementById('purge-confirm-cancel')! as HTMLButtonElement;
+const mainActions = document.getElementById('main-actions')! as HTMLDivElement;
 const openAppActions = document.getElementById('open-app-actions')! as HTMLDivElement;
 const openPushManagerButton = document.getElementById('open-push-manager')! as HTMLButtonElement;
 const openPushCatalogButton = document.getElementById('open-push-catalog')! as HTMLButtonElement;
@@ -254,6 +260,7 @@ function renderInstallLog(lines: string[]) {
 async function checkInstallStatus() {
     doInstallButton.hidden = false;
     doUninstallButton.hidden = false;
+    purgeOption.hidden = false;
     doInstallButton.disabled = true;
     doUninstallButton.disabled = true;
     openAppActions.hidden = true;
@@ -318,16 +325,40 @@ doInstallButton.addEventListener('click', async () => {
     }
 });
 
-doUninstallButton.addEventListener('click', async () => {
+// Purge deletes data for good, so it gets a second, explicit confirm. Done in
+// the page (not window.confirm) since webview dialogs are not reliable.
+function setPurgeConfirmVisible(visible: boolean) {
+    purgeConfirm.hidden = !visible;
+    mainActions.hidden = visible;
+    purgeOption.hidden = visible;
+}
+
+doUninstallButton.addEventListener('click', () => {
+    if (purgeCheckbox.checked) {
+        setPurgeConfirmVisible(true);
+        return;
+    }
+    void runUninstall(false);
+});
+
+purgeConfirmCancel.addEventListener('click', () => setPurgeConfirmVisible(false));
+
+purgeConfirmYes.addEventListener('click', () => {
+    setPurgeConfirmVisible(false);
+    void runUninstall(true);
+});
+
+async function runUninstall(purge: boolean) {
     doUninstallButton.disabled = true;
     doInstallButton.disabled = true;
+    purgeCheckbox.disabled = true;
     openAppActions.hidden = true;
     nextSteps.hidden = true;
     setInstallStatus('Uninstalling... this restarts Push3, please wait.');
     renderInstallLog([]);
 
     try {
-        const [summary, err] = await PushInstallService.Uninstall(connectedHost);
+        const [summary, err] = await PushInstallService.Uninstall(connectedHost, purge);
         renderInstallLog(summary ?? []);
         if (err) {
             setInstallStatus(err, 'error');
@@ -335,13 +366,16 @@ doUninstallButton.addEventListener('click', async () => {
         } else {
             setInstallStatus('Push Hack is not installed on this Push yet.');
             doInstallButton.disabled = false;
+            purgeCheckbox.checked = false; // never carry a purge over to the next run
         }
     } catch (err) {
         console.error(err);
         setInstallStatus('Something went wrong removing push-hack.', 'error');
         doUninstallButton.disabled = false;
+    } finally {
+        purgeCheckbox.disabled = false;
     }
-});
+}
 
 openPushManagerButton.addEventListener('click', async () => {
     try {

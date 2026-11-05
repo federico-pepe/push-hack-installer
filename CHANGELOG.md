@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.7-beta] - 2026-11-05
+
 - The content now uses the full width of the window, so there is much less scrolling. On the last screen, the two "Open ..." buttons are at the top, and all buttons on that screen have the same width. The purge checkbox is below the Uninstall button.
 - Added a checkbox to the uninstall screen: **Delete all Push Hack data** (purge). It is the same as `--purge` in `uninstall.sh`. Off by default, uninstall keeps the `push-hack` folder on the Push with its logs and settings. On, that whole folder is deleted too. This cannot be undone. The checkbox text says so, and with it checked, Uninstall asks once more before it deletes anything.
 
